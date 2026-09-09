@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Barbearia</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+    <main class="container">
+        <header class="cabecalho">
+            
+            <!-- Espaço para inserir a imagem da logo no futuro -->
+            <div class="logo-placeholder">💈</div>
+            <h2>Nome da Barbearia</h2>
+            <p>Seja bem-vindo. Como deseja prosseguir?</p>
+        </header>
+
+        <section class="botoes-iniciais">
+            <a href="/visitante" class="btn-primario">Agendar como Visitante</a>
+            <a href="/login" class="btn-secundario">Acessar Perfil</a>
+            <a href="/cadastro" class="btn-terciario">Cadastre-se</a>
+        </section>
+    </main>
+</body>
+</html>

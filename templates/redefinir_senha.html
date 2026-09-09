@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Recuperar Senha - Barbearia</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+    <main class="container">
+        <header class="cabecalho">
+            <h2>🔑 Recuperar Senha</h2>
+            <p>Informe seus dados para receber o link de recuperação</p>
+        </header>
+
+        <section class="cartao">
+            <form id="formRecuperar">
+                <div class="grupo-formulario">
+                    <label for="canal">Método de Recuperação:</label>
+                    <select id="canal" class="campo-entrada" required>
+                        <option value="email">E-mail</option>
+                        <option value="whatsapp">WhatsApp</option>
+                    </select>
+                </div>
+
+                <div class="grupo-formulario">
+                    <label for="acesso" id="label-acesso">Informe seu E-mail:</label>
+                    <input type="email" id="acesso" required class="campo-entrada" placeholder="seu@email.com">
+                </div>
+
+                <button type="submit" class="btn-primario">Enviar Link de Recuperação</button>
+            </form>
+
+            <a href="/login" class="link-voltar">Voltar para o Login</a>
+        </section>
+    </main>
+
+    <script src="{{ url_for('static', filename='js/script.js') }}"></script>
+</body>
+</html>

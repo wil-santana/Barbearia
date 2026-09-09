@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cadastro - Barbearia</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+    <main class="container">
+        <header class="cabecalho">
+            <h2>Novo Cadastro</h2>
+            <p>Crie seu perfil para acessar o histórico</p>
+        </header>
+
+        <section class="cartao">
+            <form id="form-cadastro">
+                <div class="grupo-formulario">
+                    <label for="cad-nome">Nome completo <spam class="obrigatorio">*</spam></label>
+                    <input type="text" id="cad-nome" class="campo-data" required placeholder="Digite seu nome">
+                </div>
+                
+                <div class="grupo-formulario">
+                    <label for="cad-celular">Celular (WhatsApp) <spam class="obrigatorio">*</spam></label>
+                    <input type="tel" id="cad-celular" class="campo-data" required placeholder="(00) 00000-0000">
+                </div>
+                
+                <div class="grupo-formulario">
+                    <label for="cad-email">E-mail <spam class="obrigatorio">*</spam></label>
+                    <input type="email" id="cad-email" class="campo-data" required placeholder="seu@email.com">
+                </div>
+                
+                <div class="grupo-formulario">
+                    <label for="cad-nascimento">Data de Nascimento (Opcional)</label>
+                    <input type="date" id="cad-nascimento" class="campo-data">
+                </div>
+
+                <div class="grupo-formulario">
+                    <label for="cad-senha">Crie uma senha <spam class="obrigatorio">*</spam></label>
+            
+                    <input type="password" id="cad-senha" class="campo-data" required placeholder="Digite sua senha">
+                </div>
+                <div class="grupo-formulario">
+                    <label for="cad-confirmar-senha">Confirme sua senha <spam class="obrigatorio">*</spam></label>
+                    <input type="password" id="cad-confirmar-senha" class="campo-data" required placeholder="Confirme sua senha">   
+                </div>
+                <p class="observacao"><spam class="obrigatorio">*</spam> Campos obrigatórios</p>
+                
+                <button type="submit" class="btn-primario">Confirmar Cadastro</button>
+            </form>
+            
+            <div class="links-uteis">
+                <a href="/">Voltar ao Início</a>
+                <a href="/login">Já tenho conta</a>
+            </div>
+        </section>
+    </main>
+
+    <script src="{{ url_for('static', filename='js/script.js') }}"></script>
+</body>
+</html>

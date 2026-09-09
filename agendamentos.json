@@ -1,0 +1,136 @@
+[
+    {
+        "cliente_nome": "wilson",
+        "cliente_telefone": "81999590677",
+        "data_agendamento": "2026-08-30",
+        "horario": "08:00",
+        "status": "Conclu\u00eddo",
+        "id": 1
+    },
+    {
+        "cliente_nome": "wilson",
+        "cliente_telefone": "81999590677",
+        "data_agendamento": "2026-08-30",
+        "horario": "08:30",
+        "status": "Conclu\u00eddo",
+        "id": 2
+    },
+    {
+        "cliente_nome": "wilson",
+        "cliente_telefone": "81999590677",
+        "data_agendamento": "2026-08-30",
+        "horario": "18:30",
+        "status": "Conclu\u00eddo",
+        "id": 3
+    },
+    {
+        "cliente_nome": "joao",
+        "cliente_telefone": "9999999999",
+        "data_agendamento": "2026-08-31",
+        "horario": "08:00",
+        "status": "Conclu\u00eddo",
+        "id": 4
+    },
+    {
+        "cliente_nome": "joao",
+        "cliente_telefone": "81999999999",
+        "data_agendamento": "2026-08-31",
+        "horario": "08:30",
+        "status": "Conclu\u00eddo",
+        "id": 5
+    },
+    {
+        "cliente_nome": "Wilson Santana",
+        "cliente_telefone": "81999590677",
+        "data_agendamento": "2026-08-31",
+        "horario": "09:00",
+        "status": "Conclu\u00eddo",
+        "id": 6
+    },
+    {
+        "cliente_nome": "Wilson Santana",
+        "cliente_telefone": "81999590677",
+        "data_agendamento": "2026-08-31",
+        "horario": "09:30",
+        "status": "Cancelado",
+        "id": 7,
+        "usuario_id": 1
+    },
+    {
+        "cliente_nome": "joao",
+        "cliente_telefone": "81999999999",
+        "data_agendamento": "2026-08-31",
+        "horario": "10:00",
+        "status": "Conclu\u00eddo",
+        "id": 8,
+        "usuario_id": 2
+    },
+    {
+        "cliente_nome": "Wilson Santana",
+        "cliente_telefone": "81999590677",
+        "data_agendamento": "2026-08-30",
+        "horario": "09:00",
+        "status": "Conclu\u00eddo",
+        "id": 9,
+        "usuario_id": 1
+    },
+    {
+        "cliente_nome": "joao",
+        "cliente_telefone": "81999999999",
+        "data_agendamento": "2026-09-01",
+        "horario": "08:00",
+        "status": "Cancelado",
+        "id": 10,
+        "usuario_id": 2
+    },
+    {
+        "cliente_nome": "Wilson Santana",
+        "cliente_telefone": "81999590677",
+        "data_agendamento": "2026-09-01",
+        "horario": "08:30",
+        "status": "Cancelado",
+        "id": 11,
+        "usuario_id": 1
+    },
+    {
+        "cliente_nome": "joao",
+        "cliente_telefone": "81888888888",
+        "data_agendamento": "2026-09-01",
+        "horario": "19:00",
+        "status": "Cancelado",
+        "id": 12
+    },
+    {
+        "cliente_nome": "wilson",
+        "cliente_telefone": "81888888888",
+        "data_agendamento": "2026-09-04",
+        "horario": "08:00",
+        "status": "Agendado",
+        "id": 13
+    },
+    {
+        "cliente_nome": "maria jose",
+        "cliente_telefone": "8177777777",
+        "data_agendamento": "2026-09-04",
+        "horario": "08:30",
+        "status": "Cancelado",
+        "id": 14,
+        "usuario_id": 3
+    },
+    {
+        "cliente_nome": "wilson",
+        "cliente_telefone": "(81)99959-0677",
+        "data_agendamento": "2026-09-04",
+        "horario": "08:30",
+        "status": "Agendado",
+        "id": 15
+    },
+    {
+        "cliente_nome": "everton",
+        "cliente_telefone": "81999999999",
+        "data_agendamento": "2026-09-09",
+        "horario": "08:00",
+        "status": "Cancelado",
+        "id": 16
+    }
+]

@@ -1,0 +1,324 @@
+/* Reset básico para tirar margens padrão do navegador */
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    background-color: #f4f7f6;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    color: #333;
+    display: flex;
+    justify-content: center; /* Mantém no centro da tela no PC */
+    padding: 20px;
+}
+
+.container {
+    width: 100%;
+    max-width: 500px; /* Evita que estique demais no computador */
+}
+
+.cabecalho {
+    text-align: center;
+    margin-bottom: 30px;
+}
+
+.cabecalho p {
+    color: #666;
+    margin-top: 5px;
+}
+
+.cartao {
+    background-color: #fff;
+    padding: 25px;
+    border-radius: 15px;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+}
+
+.grupo-formulario {
+    margin-bottom: 25px;
+}
+
+.grupo-formulario label {
+    display: block;
+    font-weight: bold;
+    margin-bottom: 10px;
+}
+
+.campo-data {
+    width: 100%;
+    padding: 15px;
+    font-size: 16px;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    outline: none;
+}
+
+/* Grid para organizar os botões um embaixo do outro */
+
+.btn-confirmar {
+        width: 100%;
+        padding: 15px;
+        font-size: 18px;
+        background-color: #333;
+        color: #fff;
+        border: none;
+        border-radius: 8px;
+        cursor: pointer;
+        transition: all 0.2s;
+        margin-top: 10px;
+    }
+
+    .btn-confirmar:hover {
+        background-color: #555;
+    }
+
+    .btn-confirmar:active {
+        transform: scale(0.95);
+    }
+
+    /* Classes para os botões de navegação e login */
+.botoes-iniciais {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    margin-top: 40px;
+}
+
+.btn-primario, .btn-secundario, .btn-terciario {
+    width: 100%;
+    padding: 15px;
+    font-size: 16px;
+    text-align: center;
+    text-decoration: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: bold;
+    transition: all 0.2s;
+}
+
+.btn-primario {
+    background-color: #333;
+    color: #fff;
+    border: none;
+    margin-top: 15px;
+}
+
+.btn-primario:hover {
+    background-color: #555;
+}
+
+.btn-secundario {
+    background-color: #333;
+    color: #fff;
+    border: none;
+}
+
+.btn-secundario:hover {
+    background-color: #555;
+    
+}
+
+.btn-terciario {
+    background-color: #333;
+    color: #fff;
+    border: none;
+}
+
+.btn-terciario:hover {
+    background-color: #555;
+}
+
+.logo-placeholder {
+    font-size: 60px;
+    margin-bottom: 10px;
+}
+
+.links-uteis {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 20px;
+    font-size: 14px;
+}
+
+.links-uteis a {
+    color: #666;
+    text-decoration: none;
+}
+
+.links-uteis a:hover {
+    text-decoration: underline;
+}
+
+/* Estilo para alinhar o checkbox do "Manter-me conectado" */
+.grupo-checkbox {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin: 5px 0;
+}
+
+.grupo-checkbox input[type="checkbox"] {
+    width: 20px;
+    height: 20px;
+    cursor: pointer;
+}
+
+.grupo-checkbox label {
+    margin-bottom: 0;
+    cursor: pointer;
+    font-weight: normal;
+    font-size: 14px;
+}
+
+/* Estilo para o botão de Sair (Logout) no perfil */
+.btn-sair {
+    background-color: #dc3545; /* Vermelho padrão para ações de saída/exclusão */
+    color: #fff;
+    margin-top: 10px;
+}
+
+.btn-sair:hover {
+    background-color: #b02a37;
+}
+
+.obrigatorio {
+    color: #dc3545;
+    font-size: 18px;
+    margin-top: 5px;
+    font-weight: bold;
+}   
+
+.btn-sair {
+    background-color: #dc3545;
+    color: #fff;
+    border: none;
+}
+.btn-sair:hover {
+    background-color: #b02a37;
+    color: #fff;
+}
+
+/* Tabela do Perfil */
+.tabela-container {
+    margin-top: 15px;
+    overflow-x: auto;
+}
+
+.tabela-agendamentos {
+    width: 100%;
+    border-collapse: collapse;
+    text-align: left;
+}
+
+.tabela-agendamentos th, 
+.tabela-agendamentos td {
+    padding: 10px;
+    border-bottom: 1px solid #ddd;
+}
+
+.tabela-vazia {
+    text-align: center;
+    color: #777;
+    padding: 20px !important;
+}
+
+/* Badges de Status */
+.badge {
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 12px;
+    font-weight: bold;
+}
+
+.badge.agendado {
+    background-color: #d1e7dd;
+    color: #0f5132;
+}
+
+.badge.cancelado {
+    background-color: #f8d7da;
+    color: #842029;
+}
+
+.badge.concluido {
+    background-color: #cff4fc;
+    color: #055160;
+}
+
+/* Botão Cancelar */
+.btn-cancelar {
+    background-color: #dc3545;
+    color: white;
+    border: none;
+    padding: 5px 10px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 12px;
+}
+
+.btn-cancelar:hover {
+    background-color: #bb2d3b;
+}
+
+.texto-suave {
+    color: #999;
+}
+
+/* Estilos para a Ficha do Cliente no Admin */
+.dado-ficha {
+    padding: 10px;
+    background-color: #f8f9fa;
+    border: 1px solid #dee2e6;
+    border-radius: 4px;
+    margin-top: 5px;
+    color: #333;
+}
+
+.link-voltar {
+    display: block;
+    text-decoration: none;
+    text-align: center;
+    margin-top: 20px;
+}
+
+/* Classes auxiliares para elementos dinâmicos */
+.escondido {
+    display: none !important;
+}
+
+/* Botões de ação do Perfil */
+.btn-novo-agendamento {
+    display: block;
+    text-decoration: none;
+    text-align: center;
+    margin-top: 15px;
+}
+
+.btn-sair {
+    display: block;
+    text-decoration: none;
+    text-align: center;
+    margin-top: 10px;
+}
+
+.container-perfil {
+    max-width: 650px;
+}
+
+.btn-largura-total {
+    width: 100%;
+    margin-top: 15px;
+}
+
+#secao-form-perfil {
+    display: none;
+    margin-top: 100px;
+}
+
+.divisor-perfil {
+    margin: 20px 0;
+    border: 0;
+    border-top: 1px solid #ddd;
+}

@@ -1,0 +1,28 @@
+[
+    {
+        "nome": "Wilson Santana Gomes",
+        "celular": "81999590677",
+        "email": "wilsantanna@gmail.com",
+        "nascimento": "2026-08-02",
+        "senha": "123456",
+        "id": 1,
+        "token_recuperacao": "87979c02ac424a4c87b82c46627576b5",
+        "token_expiracao": 1788475989.7549515
+    },
+    {
+        "nome": "joao",
+        "celular": "81999999999",
+        "email": "joao@hotmail.com",
+        "nascimento": "2026-03-12",
+        "senha": "123456",
+        "id": 2
+    },
+    {
+        "nome": "maria jose",
+        "celular": "8177777777",
+        "email": "maria@maria.com",
+        "nascimento": "2026-09-01",
+        "senha": "123456",
+        "id": 3
+    }
+]

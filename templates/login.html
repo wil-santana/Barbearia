@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - Barbearia</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+    <main class="container">
+        <header class="cabecalho">
+            <h2>Acessar Perfil</h2>
+            <p>Consulte seu histórico de agendamentos</p>
+        </header>
+
+        <section class="cartao">
+            <form id="form-login">
+                <div class="grupo-formulario">
+                    <label for="acesso">WhatsApp ou E-mail:</label>
+                    <input type="text" id="acesso" class="campo-data" placeholder="Digite seu acesso">
+                </div>
+            
+                 <div class="grupo-formulario">
+                    <label for="senha">Senha:</label>
+                    <input type="password" id="senha" class="campo-data" placeholder="Sua senha">
+                 </div>
+            
+                 <div class="grupo-checkbox">
+                    <input type="checkbox" id="manter-conectado">
+                    <label for="manter-conectado">Manter-me conectado</label>
+                </div>
+
+                 <button type="button" id="btn-entrar" class="btn-primario">Entrar</button>
+            </form>
+
+            <div class="links-uteis">
+                <a href="/esqueci-senha">Esqueci a senha</a>
+                <a href="/visitante">Voltar</a>
+            </div>
+        </section>
+    </main>
+    <script src="{{ url_for('static', filename='js/script.js') }}"></script>
+</body>
+</html>
