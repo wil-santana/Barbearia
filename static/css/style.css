@@ -66,7 +66,7 @@ body {
 }
 
 .btn-entrar {
-    width: 90%;
+    width: 92%;
     padding: 15px;
     font-size: 18px;
     background-color: #34d32f;
@@ -165,7 +165,7 @@ body {
 }
 
 .links-uteis a {
-    color: #666;
+    color: #4143c5;
     text-decoration: none;
 }
 
@@ -181,9 +181,13 @@ body {
     margin: 5px 0;
 }
 
+.manter {
+    color: #4143c5;
+}
+
 .grupo-checkbox input[type="checkbox"] {
-    width: 20px;
-    height: 20px;
+    width: 15px;
+    height: 15px;
     cursor: pointer;
 }
 
@@ -191,7 +195,8 @@ body {
     margin-bottom: 0;
     cursor: pointer;
     font-weight: normal;
-    font-size: 14px;
+    font-size: 12px;
+    font-color: #3c89d1;
 }
 
 /* Estilo para o botão de Sair (Logout) no perfil */
