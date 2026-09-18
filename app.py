@@ -261,7 +261,7 @@ def salvar_cadastro():
 @app.route('/agendar-logado')
 def agendar_logado():
     if 'usuario_id' not in session:
-        return redirect(url_for('login'))
+        return redirect(url_for('home'))
         
     usuario_id = session['usuario_id']
     usuario_encontrado = None
@@ -319,7 +319,7 @@ def atualizar_senha():
 @app.route('/logout')
 def logout():
     session.clear() # Destroi o "crachá" da sessão
-    return redirect(url_for('login'))
+    return redirect(url_for('home'))
 
 
 import uuid
@@ -429,7 +429,7 @@ def salvar_nova_senha():
 def perfil():
     usuario_id = session.get('usuario_id')
     if not usuario_id:
-        return redirect(url_for('fazer_login'))
+        return redirect(url_for('home'))
         
     usuario_atual = None
     if os.path.exists(ARQUIVO_USUARIOS) and os.path.getsize(ARQUIVO_USUARIOS) > 0:

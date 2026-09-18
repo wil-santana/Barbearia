@@ -46,6 +46,16 @@ body {
     margin-bottom: 10px;
 }
 
+.campo-entrada {
+    width: 90%;
+    padding: 8px;
+    font-size: 14px;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    outline: none;
+}
+
+
 .campo-data {
     width: 100%;
     padding: 15px;
@@ -53,6 +63,19 @@ body {
     border: 1px solid #ccc;
     border-radius: 8px;
     outline: none;
+}
+
+.btn-entrar {
+    width: 90%;
+    padding: 15px;
+    font-size: 18px;
+    background-color: #34d32f;
+    color: #fff;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.2s;
+    margin-top: 10px;
 }
 
 /* Grid para organizar os botões um embaixo do outro */
@@ -87,6 +110,7 @@ body {
 }
 
 .btn-primario, .btn-secundario, .btn-terciario {
+    background-color: #34d32f;
     width: 100%;
     padding: 15px;
     font-size: 16px;
@@ -99,18 +123,17 @@ body {
 }
 
 .btn-primario {
-    background-color: #333;
-    color: #fff;
+    color:#fff;
     border: none;
     margin-top: 15px;
 }
 
-.btn-primario:hover {
+.btn-primario:hover, .btn-entrar:hover {
+    
     background-color: #555;
 }
 
 .btn-secundario {
-    background-color: #333;
     color: #fff;
     border: none;
 }
@@ -121,7 +144,6 @@ body {
 }
 
 .btn-terciario {
-    background-color: #333;
     color: #fff;
     border: none;
 }
@@ -321,4 +343,60 @@ body {
     margin: 20px 0;
     border: 0;
     border-top: 1px solid #ddd;
+}
+
+/* =========================================
+   ESTILOS DO MODAL
+   ========================================= */
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(17, 24, 39, 0.7); /* Fundo escuro semi-transparente */
+    backdrop-filter: blur(4px); /* Desfoque elegante no fundo */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+}
+
+.modal-conteudo {
+    width: 90%;
+    max-width: 400px;
+    position: relative;
+    animation: deslizarCima 0.3s ease-out forwards;
+    margin: 0; /* Remove margem extra do cartão padrão */
+}
+
+/* Botão de fechar (X) */
+.btn-fechar {
+    position: absolute;
+    top: 15px;
+    right: 15px;
+    background: none;
+    border: none;
+    font-size: 28px;
+    color: #9ca3af;
+    cursor: pointer;
+    z-index: 10;
+    line-height: 1;
+    transition: color 0.2s;
+}
+
+.btn-fechar:hover {
+    color: #111827;
+}
+
+/* Animação suave de entrada */
+@keyframes deslizarCima {
+    from {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
 }

@@ -139,41 +139,7 @@ document.addEventListener("DOMContentLoaded", function() {
         });
     }
 
-    // ==========================================
-    // 3. TELA DE LOGIN
-    // ==========================================
-    const btnEntrar = document.getElementById("btn-entrar");
-    if (btnEntrar) {
-        btnEntrar.addEventListener("click", function() {
-            const acesso = document.getElementById("acesso").value;
-            const senha = document.getElementById("senha").value;
-
-            if (!acesso || !senha) {
-                alert("Por favor, preencha o acesso e a senha!");
-                return;
-            }
-
-            fetch('/fazer-login', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ acesso: acesso, senha: senha })
-            })
-            .then(resposta => resposta.json())
-            .then(dados => {
-                if (dados.status === "erro") {
-                    alert(dados.mensagem);
-                } else {
-                    alert("Login efetuado com sucesso!");
-                    window.location.href = "/perfil"; 
-                }
-            })
-            .catch(erro => {
-                alert("Erro de conexão com o Python!");
-                console.error(erro);
-            });
-        });
-    }
-
+    
     // ==========================================
     // 4. FLUXO SEGURO DE RECUPERAÇÃO DE SENHA
     // ==========================================
@@ -333,5 +299,81 @@ document.addEventListener("DOMContentLoaded", function() {
             }
         });
     });
+
+
+// ==========================================
+    // LÓGICA DO MODAL DE LOGIN (Página Inicial)
+    // ==========================================
+    const btnAbrirModal = document.getElementById("btn-abrir-modal-login");
+    const modalLogin = document.getElementById("modal");
+    const btnFecharModal = document.getElementById("btn-fechar-modal");
+
+    // 1. Abrir modal ao clicar em "Acessar Perfil"
+    if (btnAbrirModal && modalLogin) {
+        btnAbrirModal.addEventListener("click", function() {
+            modalLogin.classList.remove("escondido");
+        });
+    }
+
+    // 2. Fechar modal no botão (X)
+    if (btnFecharModal && modalLogin) {
+        btnFecharModal.addEventListener("click", function() {
+            modalLogin.classList.add("escondido");
+        });
+    }
+
+    // 3. Fechar modal clicando fora da caixa branca
+    if (modalLogin) {
+        modalLogin.addEventListener("click", function(e) {
+            if (e.target === modalLogin) {
+                modalLogin.classList.add("escondido");
+            }
+        });
+    }
+
+    // ==========================================
+    // LÓGICA DE LOGIN (Enviando os dados)
+    // ==========================================
+    const btnEntrar = document.getElementById("btn-entrar");
+    if (btnEntrar) {
+        btnEntrar.addEventListener("click", function() {
+            const acesso = document.getElementById("acesso").value;
+            const senha = document.getElementById("senha").value;
+            const manterConectado = document.getElementById("manter-conectado").checked;
+
+            if (!acesso || !senha) {
+                alert("Por favor, preencha o acesso e a senha!");
+                return;
+            }
+
+            // Altera o texto para dar feedback visual ao usuário
+            const textoOriginal = btnEntrar.innerText;
+            btnEntrar.innerText = "Autenticando...";
+            btnEntrar.disabled = true;
+
+            fetch('/fazer-login', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ acesso: acesso, senha: senha, lembrar: manterConectado })
+            })
+            .then(resposta => resposta.json())
+            .then(dados => {
+                if (dados.status === "erro") {
+                    alert(dados.mensagem);
+                    btnEntrar.innerText = textoOriginal;
+                    btnEntrar.disabled = false;
+                } else {
+                    // Login com sucesso, redireciona para o painel!
+                    window.location.href = "/perfil"; 
+                }
+            })
+            .catch(erro => {
+                alert("Erro de conexão com o servidor!");
+                console.error(erro);
+                btnEntrar.innerText = textoOriginal;
+                btnEntrar.disabled = false;
+            });
+        });
+    }
 
 });

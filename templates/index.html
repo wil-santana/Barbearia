@@ -18,9 +18,47 @@
 
         <section class="botoes-iniciais">
             <a href="/visitante" class="btn-primario">Agendar como Visitante</a>
-            <a href="/login" class="btn-secundario">Acessar Perfil</a>
+            <button id="btn-abrir-modal-login" class="btn-secundario">Acessar Perfil</button>
             <a href="/cadastro" class="btn-terciario">Cadastre-se</a>
         </section>
     </main>
+
+
+    <div id="modal" class="modal-overlay escondido">
+        <div class="modal-conteudo cartao marca-dagua-container">
+            <button id="btn-fechar-modal" class="btn-fechar">&times;</button>
+
+            <header class="cabecalho">
+                <h2>Bem-vindo de volta!</h2>
+                <p>Acesse sua conta para continuar:</p>
+            </header>
+            
+            <form id="form-login-modal">
+            <div class="grupo-formulario">
+               <label for="acesso">E-mail ou Celular:</label>
+                    <input type="text" id="acesso" class="campo-entrada" placeholder="Digite seu acesso" required>
+                </div>
+                
+                <div class="grupo-formulario">
+                    <label for="senha">Senha:</label>
+                    <input type="password" id="senha" class="campo-entrada" placeholder="Digite sua senha" required>
+                </div>
+                
+                <div class="grupo-checkbox">
+                    <input type="checkbox" id="manter-conectado">
+                    <label for="manter-conectado">Manter-me conectado</label>
+                </div>
+                
+                <button type="button" id="btn-entrar" class="btn-entrar">Entrar</button>
+            </form>
+
+            <div class="links-uteis">
+                <a href="/esqueci_senha">Esqueci minha senha</a>
+                <a href="/cadastro">Criar uma conta</a>
+            </div>
+        </div>
+    </div>
+
+    <script src="{{ url_for('static', filename='js/script.js') }}"></script>
 </body>
 </html>
