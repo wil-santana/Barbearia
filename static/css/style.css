@@ -16,7 +16,7 @@ body {
 
 .container {
     width: 100%;
-    max-width: 500px; /* Evita que estique demais no computador */
+    max-width: 450px; /* Largura proporcional padrão para os formulários */
 }
 
 .cabecalho {
@@ -34,122 +34,93 @@ body {
     padding: 25px;
     border-radius: 15px;
     box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+    width: 100%;
 }
 
 .grupo-formulario {
-    margin-bottom: 25px;
+    margin-bottom: 20px;
+    width: 100%;
 }
 
 .grupo-formulario label {
     display: block;
     font-weight: bold;
-    margin-bottom: 10px;
+    margin-bottom: 8px;
 }
 
-.campo-entrada {
-    width: 90%;
-    padding: 8px;
-    font-size: 14px;
+/* Padronização unificada para TODOS os inputs e selects ocuparem 100% do bloco */
+.campo-entrada, 
+.campo-data, 
+input[type="text"], 
+input[type="email"], 
+input[type="password"], 
+input[type="tel"], 
+input[type="date"], 
+select {
+    width: 100% !important;
+    padding: 12px 15px;
+    font-size: 15px;
     border: 1px solid #ccc;
     border-radius: 8px;
     outline: none;
+    box-sizing: border-box;
 }
 
-
-.campo-data {
-    width: 100%;
-    padding: 15px;
-    font-size: 16px;
-    border: 1px solid #ccc;
-    border-radius: 8px;
-    outline: none;
+.campo-entrada:focus, .campo-data:focus, select:focus {
+    border-color: #34d32f;
 }
 
-.btn-entrar {
-    width: 92%;
-    padding: 15px;
-    font-size: 18px;
-    background-color: #34d32f;
-    color: #fff;
-    border: none;
-    border-radius: 8px;
-    cursor: pointer;
-    transition: all 0.2s;
-    margin-top: 10px;
-}
-
-/* Grid para organizar os botões um embaixo do outro */
-
-.btn-confirmar {
-        width: 100%;
-        padding: 15px;
-        font-size: 18px;
-        background-color: #333;
-        color: #fff;
-        border: none;
-        border-radius: 8px;
-        cursor: pointer;
-        transition: all 0.2s;
-        margin-top: 10px;
-    }
-
-    .btn-confirmar:hover {
-        background-color: #555;
-    }
-
-    .btn-confirmar:active {
-        transform: scale(0.95);
-    }
-
-    /* Classes para os botões de navegação e login */
-.botoes-iniciais {
-    display: flex;
-    flex-direction: column;
-    gap: 15px;
-    margin-top: 40px;
-}
-
-.btn-primario, .btn-secundario, .btn-terciario {
-    background-color: #34d32f;
-    width: 100%;
+/* Botões com largura 100% perfeitamente alinhados aos inputs */
+.btn-entrar,
+.btn-confirmar,
+.btn-primario, 
+.btn-secundario, 
+.btn-terciario,
+.btn-sair {
+    width: 100% !important;
     padding: 15px;
     font-size: 16px;
     text-align: center;
     text-decoration: none;
+    border: none;
     border-radius: 8px;
     cursor: pointer;
     font-weight: bold;
     transition: all 0.2s;
+    box-sizing: border-box;
+    display: block;
+    margin-top: 10px;
 }
 
-.btn-primario {
-    color:#fff;
-    border: none;
-    margin-top: 15px;
-}
-
-.btn-primario:hover, .btn-entrar:hover {
-    
-    background-color: #555;
-}
-
-.btn-secundario {
+.btn-entrar, .btn-primario, .btn-secundario, .btn-terciario {
+    background-color: #34d32f;
     color: #fff;
-    border: none;
 }
 
-.btn-secundario:hover {
-    background-color: #555;
-    
+.btn-entrar:hover, .btn-primario:hover, .btn-secundario:hover, .btn-terciario:hover {
+    background-color: #2ab525;
 }
 
-.btn-terciario {
+.btn-confirmar {
+    background-color: #333;
     color: #fff;
-    border: none;
 }
 
-.btn-terciario:hover {
+.btn-confirmar:hover {
     background-color: #555;
+}
+
+.btn-confirmar:active {
+    transform: scale(0.95);
+}
+
+/* Classes para os botões de navegação e login */
+.botoes-iniciais {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    margin-top: 30px;
+    width: 100%;
 }
 
 .logo-placeholder {
@@ -162,6 +133,7 @@ body {
     justify-content: space-between;
     margin-top: 20px;
     font-size: 14px;
+    width: 100%;
 }
 
 .links-uteis a {
@@ -178,16 +150,12 @@ body {
     display: flex;
     align-items: center;
     gap: 10px;
-    margin: 5px 0;
-}
-
-.manter {
-    color: #4143c5;
+    margin: 10px 0;
 }
 
 .grupo-checkbox input[type="checkbox"] {
-    width: 15px;
-    height: 15px;
+    width: 16px;
+    height: 16px;
     cursor: pointer;
 }
 
@@ -195,19 +163,19 @@ body {
     margin-bottom: 0;
     cursor: pointer;
     font-weight: normal;
-    font-size: 12px;
-    font-color: #3c89d1;
+    font-size: 13px;
+    color: #3c89d1;
 }
 
 /* Estilo para o botão de Sair (Logout) no perfil */
 .btn-sair {
-    background-color: #dc3545; /* Vermelho padrão para ações de saída/exclusão */
+    background-color: #dc3545;
     color: #fff;
-    margin-top: 10px;
 }
 
 .btn-sair:hover {
     background-color: #b02a37;
+    color: #fff;
 }
 
 .obrigatorio {
@@ -216,16 +184,6 @@ body {
     margin-top: 5px;
     font-weight: bold;
 }   
-
-.btn-sair {
-    background-color: #dc3545;
-    color: #fff;
-    border: none;
-}
-.btn-sair:hover {
-    background-color: #b02a37;
-    color: #fff;
-}
 
 /* Tabela do Perfil */
 .tabela-container {
@@ -315,33 +273,13 @@ body {
     display: none !important;
 }
 
-/* Botões de ação do Perfil */
-.btn-novo-agendamento {
-    display: block;
-    text-decoration: none;
-    text-align: center;
-    margin-top: 15px;
-}
-
-.btn-sair {
-    display: block;
-    text-decoration: none;
-    text-align: center;
-    margin-top: 10px;
-}
-
 .container-perfil {
     max-width: 650px;
 }
 
-.btn-largura-total {
-    width: 100%;
-    margin-top: 15px;
-}
-
 #secao-form-perfil {
     display: none;
-    margin-top: 100px;
+    margin-top: 20px;
 }
 
 .divisor-perfil {
@@ -359,8 +297,8 @@ body {
     left: 0;
     width: 100%;
     height: 100%;
-    background-color: rgba(17, 24, 39, 0.7); /* Fundo escuro semi-transparente */
-    backdrop-filter: blur(4px); /* Desfoque elegante no fundo */
+    background-color: rgba(17, 24, 39, 0.7);
+    backdrop-filter: blur(4px);
     display: flex;
     justify-content: center;
     align-items: center;
@@ -372,7 +310,7 @@ body {
     max-width: 400px;
     position: relative;
     animation: deslizarCima 0.3s ease-out forwards;
-    margin: 0; /* Remove margem extra do cartão padrão */
+    margin: 0;
 }
 
 /* Botão de fechar (X) */
