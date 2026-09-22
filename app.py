@@ -11,15 +11,21 @@ app.permanent_session_lifetime = timedelta(days=7) # Duração se "Manter conect
 ARQUIVO_AGENDAMENTOS = 'agendamentos.json'
 ARQUIVO_USUARIOS = 'usuarios.json'
 ARQUIVO_BLOQUEIOS = 'bloqueios.json'
+ARQUIVO_CONFIG_AGENDA = 'config_agenda.json'
 
 def inicializar_banco():
-    arquivos = [ARQUIVO_AGENDAMENTOS, ARQUIVO_USUARIOS, ARQUIVO_BLOQUEIOS]
-    for arquivo in arquivos:
-        # Se o arquivo não existir OU estiver vazio (tamanho 0), recria com uma lista vazia
+    arquivos_lista = [ARQUIVO_AGENDAMENTOS, ARQUIVO_USUARIOS, ARQUIVO_BLOQUEIOS]
+    for arquivo in arquivos_lista:
         if not os.path.exists(arquivo) or os.path.getsize(arquivo) == 0:
             with FileLock(f"{arquivo}.lock"):
                 with open(arquivo, 'w') as f:
                     json.dump([], f)
+                    
+    # Inicializa o arquivo de configuração de agenda (Padrão: Dom e Seg fechados)
+    if not os.path.exists(ARQUIVO_CONFIG_AGENDA) or os.path.getsize(ARQUIVO_CONFIG_AGENDA) == 0:
+        with FileLock(f"{ARQUIVO_CONFIG_AGENDA}.lock"):
+            with open(ARQUIVO_CONFIG_AGENDA, 'w') as f:
+                json.dump({"dias_fechados": [0, 1], "excecoes": {}}, f, indent=4)
 
 inicializar_banco()
 
@@ -39,9 +45,6 @@ def login():
 def cadastro():
     return render_template('cadastro.html')
 
-from datetime import datetime, date
-
-
 @app.route('/cancelar-agendamento', methods=['POST'])
 def cancelar_agendamento():
     dados = request.get_json()
@@ -57,7 +60,6 @@ def cancelar_agendamento():
 
             encontrou = False
             for reserva in historico:
-                # Se o ID bater, cancela independente de ser o cliente ou o admin
                 if str(reserva.get('id')) == str(agendamento_id):
                     reserva['status'] = 'Cancelado'
                     encontrou = True
@@ -74,23 +76,41 @@ def cancelar_agendamento():
 def agendar():
     try:
         dados_cliente = request.get_json()
-
         data_reserva = dados_cliente.get('data_agendamento')
         horario_reserva = dados_cliente.get('horario')
         
         hoje_str = date.today().strftime('%Y-%m-%d')
         agora_str = datetime.now().strftime('%H:%M')
         
-        # Validação de segurança no backend
+        # 1. Validação de segurança: datas ou horários passados
         if data_reserva < hoje_str or (data_reserva == hoje_str and horario_reserva < agora_str):
             return jsonify({"status": "erro", "mensagem": "Não é permitido agendar em datas ou horários passados!"}), 400
         
+        # 2. Validação de segurança: dias fechados, feriados e exceções
+        config = ler_config_agenda()
+        data_obj = datetime.strptime(data_reserva, '%Y-%m-%d').date()
+        dia_semana_js = (data_obj.weekday() + 1) % 7  # 0=Domingo, 1=Segunda... 6=Sábado
+        
+        status_excecao = config["excecoes"].get(data_reserva)
+        permitido = True
+        
+        if status_excecao == 'fechado':
+            permitido = False
+        elif status_excecao == 'aberto':
+            permitido = True
+        else:
+            if dia_semana_js in config.get("dias_fechados", []):
+                permitido = False
+                
+        if not permitido:
+            return jsonify({"status": "erro", "mensagem": "A barbearia está fechada nesta data!"}), 400
+
+        # Continua o salvamento normal...
         with FileLock(f"{ARQUIVO_AGENDAMENTOS}.lock"):
             with open(ARQUIVO_AGENDAMENTOS, 'r') as f:
                 historico = json.load(f)
             dados_cliente['id'] = len(historico) + 1
 
-            # Se o usuário estiver logado e enviou o ID, garante que ele seja salvo como número
             if 'usuario_id' in session and not dados_cliente.get('usuario_id'):
                 dados_cliente['usuario_id'] = session['usuario_id']
 
@@ -117,7 +137,6 @@ def horarios_ocupados():
                 historico = json.load(f)
                 if isinstance(historico, list):
                     for reserva in historico:
-                        # Ocupa apenas se a data bater E o status for EXATAMENTE 'Agendado'
                         if reserva.get('data_agendamento') == data_escolhida and reserva.get('status') == 'Agendado':
                             ocupados.append(reserva.get('horario'))
         except json.JSONDecodeError:
@@ -139,7 +158,6 @@ def admin():
             
     return render_template('admin.html', agendamentos=todos_agendamentos)
 
-# Rota para visualizar os dados de um cliente específico pelo Admin
 @app.route('/admin/cliente/<int:usuario_id>')
 def admin_ver_cliente(usuario_id):
     usuario_encontrado = None
@@ -159,13 +177,12 @@ def admin_ver_cliente(usuario_id):
 @app.route('/fazer-login', methods=['POST'])
 def fazer_login():
     dados = request.get_json()
-    acesso = dados.get('acesso') # Pode ser o email ou o celular
+    acesso = dados.get('acesso')
     senha = dados.get('senha')
     
     agora = time.time()
     bloqueios = {}
     
-    # 1. Leitura segura mantendo o controle de tentativas ativo
     with FileLock(f"{ARQUIVO_BLOQUEIOS}.lock"):
         if os.path.exists(ARQUIVO_BLOQUEIOS) and os.path.getsize(ARQUIVO_BLOQUEIOS) > 0:
             try:
@@ -178,12 +195,10 @@ def fazer_login():
             
         registro = bloqueios.get(acesso, {"tentativas": 0, "bloqueado_ate": 0})
         
-        # 2. Verifica se já está de castigo
         if registro["bloqueado_ate"] > agora:
             minutos = int((registro["bloqueado_ate"] - agora) / 60) + 1
             return jsonify({"status": "erro", "mensagem": f"Acesso bloqueado. Tente novamente em {minutos} minuto(s)."})
             
-        # 3. VERIFICAÇÃO REAL NO BANCO DE DADOS (JSON)
         senha_correta = False 
         usuario_logado = None
         
@@ -204,11 +219,10 @@ def fazer_login():
                         usuario_logado = u
                     break
         
-        # 4. Aplica as regras de bloqueio por erro
         if not senha_correta:
             registro["tentativas"] += 1
             if registro["tentativas"] >= 3:
-                registro["bloqueado_ate"] = agora + 300 # 5 minutos de bloqueio
+                registro["bloqueado_ate"] = agora + 300
                 registro["tentativas"] = 0
                 mensagem = "Acesso bloqueado por 5 minutos por segurança."
             else:
@@ -221,12 +235,10 @@ def fazer_login():
                 
             return jsonify({"status": "erro", "mensagem": mensagem})
         else:
-            # Senha correta: Limpa os bloqueios daquele acesso
             bloqueios.pop(acesso, None)
             with open(ARQUIVO_BLOQUEIOS, 'w') as f:
                 json.dump(bloqueios, f, indent=4)
                 
-            # Configura a sessão
             lembrar = dados.get('lembrar', False)
             session.permanent = lembrar
                 
@@ -266,7 +278,6 @@ def agendar_logado():
     usuario_id = session['usuario_id']
     usuario_encontrado = None
     
-    # Busca os dados reais do usuário no cofre
     if os.path.exists(ARQUIVO_USUARIOS):
         with open(ARQUIVO_USUARIOS, 'r') as f:
             usuarios = json.load(f)
@@ -284,8 +295,7 @@ def esqueci_senha():
 @app.route('/atualizar-senha', methods=['POST'])
 def atualizar_senha():
     dados = request.get_json()
-    canal = dados.get('canal')
-    acesso = dados.get('acesso') # Email ou celular
+    acesso = dados.get('acesso')
     nova_senha = dados.get('nova_senha')
     
     if not acesso or not nova_senha:
@@ -304,7 +314,7 @@ def atualizar_senha():
         encontrou = False
         for u in usuarios:
             if u.get('celular') == acesso or u.get('email') == acesso:
-                u['senha'] = nova_senha # Atualiza a senha no JSON
+                u['senha'] = nova_senha
                 encontrou = True
                 break
                 
@@ -318,11 +328,8 @@ def atualizar_senha():
 
 @app.route('/logout')
 def logout():
-    session.clear() # Destroi o "crachá" da sessão
+    session.clear()
     return redirect(url_for('home'))
-
-
-import uuid
 
 @app.route('/solicitar-recuperacao', methods=['POST'])
 def solicitar_recuperacao():
@@ -345,7 +352,7 @@ def solicitar_recuperacao():
             
         encontrou = False
         token = uuid.uuid4().hex
-        expiracao = time.time() + 900 # Válido por 15 minutos
+        expiracao = time.time() + 900
         
         for u in usuarios:
             if u.get('celular') == acesso or u.get('email') == acesso:
@@ -421,7 +428,6 @@ def salvar_nova_senha():
             
         with open(ARQUIVO_USUARIOS, 'w') as f:
             json.dump(usuarios, f, indent=4)
-
             
     return jsonify({"status": "sucesso", "mensagem": "Senha alterada com sucesso!"})
 
@@ -446,7 +452,6 @@ def perfil():
     if not usuario_atual:
         return "Usuário não encontrado", 404
         
-    # Carrega os agendamentos específicos deste usuário
     agendamentos_usuario = []
     if os.path.exists(ARQUIVO_AGENDAMENTOS) and os.path.getsize(ARQUIVO_AGENDAMENTOS) > 0:
         with open(ARQUIVO_AGENDAMENTOS, 'r') as f:
@@ -462,7 +467,6 @@ def perfil():
         nome=usuario_atual.get('nome'), 
         agendamentos=agendamentos_usuario
     )
-
 
 @app.route('/atualizar-perfil', methods=['POST'])
 def atualizar_perfil():
@@ -507,6 +511,64 @@ def atualizar_perfil():
             
     session['usuario_nome'] = nome
     return jsonify({"status": "sucesso", "mensagem": "Perfil atualizado com sucesso!"})
+
+
+# ==========================================
+# ROTAS DO PAINEL ADMIN (CONTROLE DE AGENDA)
+# ==========================================
+
+def ler_config_agenda():
+    if not os.path.exists(ARQUIVO_CONFIG_AGENDA) or os.path.getsize(ARQUIVO_CONFIG_AGENDA) == 0:
+        padrao = {"dias_fechados": [0, 1], "excecoes": {}}
+        with FileLock(f"{ARQUIVO_CONFIG_AGENDA}.lock"):
+            with open(ARQUIVO_CONFIG_AGENDA, 'w') as f:
+                json.dump(padrao, f, indent=4)
+        return padrao
+    with open(ARQUIVO_CONFIG_AGENDA, 'r') as f:
+        try:
+            return json.load(f)
+        except json.JSONDecodeError:
+            return {"dias_fechados": [0, 1], "excecoes": {}}
+
+def salvar_config_agenda(dados):
+    with FileLock(f"{ARQUIVO_CONFIG_AGENDA}.lock"):
+        with open(ARQUIVO_CONFIG_AGENDA, 'w') as f:
+            json.dump(dados, f, indent=4)
+
+@app.route('/admin/config-agenda', methods=['GET'])
+def get_config_agenda():
+    return jsonify(ler_config_agenda())
+
+@app.route('/admin/salvar-dias-fixos', methods=['POST'])
+def salvar_dias_fixos():
+    dados_req = request.get_json()
+    config = ler_config_agenda()
+    config["dias_fechados"] = dados_req.get("dias_fechados", [])
+    salvar_config_agenda(config)
+    return jsonify({"status": "sucesso"})
+
+@app.route('/admin/add-excecao', methods=['POST'])
+def add_excecao():
+    dados_req = request.get_json()
+    data = dados_req.get("data")
+    tipo = dados_req.get("tipo")
+    if not data:
+        return jsonify({"status": "erro", "mensagem": "Data não informada"}), 400
+    config = ler_config_agenda()
+    config["excecoes"][data] = tipo
+    salvar_config_agenda(config)
+    return jsonify({"status": "sucesso"})
+
+@app.route('/admin/remover-excecao', methods=['POST'])
+def remover_excecao():
+    dados_req = request.get_json()
+    data = dados_req.get("data")
+    config = ler_config_agenda()
+    if data in config["excecoes"]:
+        del config["excecoes"][data]
+        salvar_config_agenda(config)
+    return jsonify({"status": "sucesso"})
+
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000, debug=True)

@@ -6,24 +6,98 @@
     <title>Barbearia</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
 </head>
-<body>
+<body class="pagina-escura">
     <main class="container">
         <header class="cabecalho">
-            
             <!-- Espaço para inserir a imagem da logo no futuro -->
-            <div class="logo-placeholder">💈</div>
+            <div class="logo-placeholder" style="margin-bottom: 20px; display: flex; justify-content: center; transform: scale(1.2);">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="120" height="120">
+                    <circle cx="50" cy="50" r="48" fill="#121212" stroke="#FFFFFF" stroke-width="1"/>
+                    <circle cx="50" cy="50" r="43" fill="transparent" stroke="#FFD700" stroke-width="1.5" stroke-dasharray="4 4"/>
+                    <line x1="37" y1="63" x2="75" y2="25" stroke="#FFFFFF" stroke-width="5" stroke-linecap="round"/>
+                    <line x1="48" y1="52" x2="75" y2="25" stroke="#FFD700" stroke-width="1.5" stroke-linecap="round"/>
+                    <line x1="63" y1="63" x2="25" y2="25" stroke="#FFFFFF" stroke-width="5" stroke-linecap="round"/>
+                    <line x1="52" y1="52" x2="25" y2="25" stroke="#FFD700" stroke-width="1.5" stroke-linecap="round"/>
+                    <circle cx="32" cy="68" r="10" stroke="#FFD700" stroke-width="3.5" fill="#121212"/>
+                    <circle cx="68" cy="68" r="10" stroke="#FFD700" stroke-width="3.5" fill="#121212"/>
+                    <circle cx="50" cy="50" r="4" fill="#FFFFFF"/>
+                    <circle cx="50" cy="50" r="1.5" fill="#121212"/>
+                </svg>
+            </div>
             <h2>Nome da Barbearia</h2>
             <p>Seja bem-vindo. Como deseja prosseguir?</p>
         </header>
 
         <section class="botoes-iniciais">
-            <a href="/visitante" class="btn-primario">Agendar como Visitante</a>
+            <button id="btn-abrir-visitante" class="btn-primario">Agendar como Visitante</button>
             <button id="btn-abrir-modal-login" class="btn-secundario">Acessar Perfil</button>
-            <a href="/cadastro" class="btn-terciario">Cadastre-se</a>
+            <button id="btn-abrir-modal-cadastro" class="btn-terciario" style="width: 100%;">Cadastre-se</button>
         </section>
     </main>
 
+    <!-- ========================================= -->
+    <!-- MODAL DE AGENDAMENTO (VISITANTE)          -->
+    <!-- ========================================= -->
+    <div id="modal-visitante" class="modal-overlay escondido">
+        <div class="modal-conteudo cartao">
+            <button type="button" class="btn-fechar" id="fechar-modal-visitante">&times;</button>
+            
+            <header class="cabecalho" style="margin-bottom: 15px;">
+               <h2><span style="display: inline-block; transform: rotate(180deg);">✂️</span> Barbearia</h2>
+                <p>Faça seu agendamento</p>
+            </header>
 
+            <div class="grupo-formulario">
+                <label for="data">1. Selecione uma data:</label>
+                <input type="date" id="data" class="campo-data">
+            </div>
+            
+            <div class="grupo-formulario">
+                <label for="nome">2. Seu Nome:</label>
+                <input type="text" id="nome" class="campo-data" placeholder="Digite seu nome">
+            </div>
+            
+            <div class="grupo-formulario">
+                <label for="telefone">3. WhatsApp:</label>
+                <input type="text" id="telefone" class="campo-data" placeholder="(00) 00000-0000">
+            </div>
+            
+            <div class="grupo-formulario">
+                <label for="horario">4. Escolha o horário:</label>
+                <select id="horario" class="campo-data">
+                    <option value="" disabled selected>Escolha seu horário...</option>
+                    <option value="08:00">08:00</option>
+                    <option value="08:30">08:30</option>
+                    <option value="09:00">09:00</option>
+                    <option value="09:30">09:30</option>
+                    <option value="10:00">10:00</option>
+                    <option value="10:30">10:30</option>
+                    <option value="11:00">11:00</option>
+                    <option value="11:30">11:30</option>
+                    <option value="13:00">13:00</option>
+                    <option value="13:30">13:30</option>
+                    <option value="14:00">14:00</option>
+                    <option value="14:30">14:30</option>
+                    <option value="15:00">15:00</option>
+                    <option value="15:30">15:30</option>
+                    <option value="16:00">16:00</option>
+                    <option value="16:30">16:30</option>
+                    <option value="17:00">17:00</option>
+                    <option value="17:30">17:30</option>
+                    <option value="18:00">18:00</option>
+                    <option value="18:30">18:30</option>
+                    <option value="19:00">19:00</option>
+                    <option value="19:30">19:30</option>
+                </select>
+            </div>
+            
+            <button id="btn-agendar" class="btn-confirmar">Confirmar Agendamento</button>
+        </div>
+    </div>
+
+    <!-- ========================================= -->
+    <!-- MODAL DE LOGIN                            -->
+    <!-- ========================================= -->
     <div id="modal" class="modal-overlay escondido">
         <div class="modal-conteudo cartao marca-dagua-container">
             <button id="btn-fechar-modal" class="btn-fechar">&times;</button>
@@ -34,8 +108,8 @@
             </header>
             
             <form id="form-login-modal">
-            <div class="grupo-formulario">
-               <label for="acesso">E-mail ou Celular:</label>
+                <div class="grupo-formulario">
+                    <label for="acesso">E-mail ou Celular:</label>
                     <input type="text" id="acesso" class="campo-entrada" placeholder="Digite seu acesso" required>
                 </div>
                 
@@ -45,7 +119,7 @@
                 </div>
                 
                 <div class="grupo-checkbox">
-                    <input type="checkbox" id="manter-conectado" >
+                    <input type="checkbox" id="manter-conectado">
                     <label for="manter-conectado" class="manter">Manter-me conectado</label>
                 </div>
                 
@@ -54,8 +128,56 @@
 
             <div class="links-uteis">
                 <a href="/esqueci_senha">Esqueci minha senha</a>
-                <a href="/cadastro">Criar uma conta</a>
+                <a href="#" id="link-abrir-cadastro">Criar uma conta</a>
             </div>
+        </div>
+    </div>
+
+    <!-- ========================================= -->
+    <!-- MODAL DE CADASTRO                         -->
+    <!-- ========================================= -->
+    <div id="modal-cadastro" class="modal-overlay escondido">
+        <div class="modal-conteudo cartao">
+            <button type="button" class="btn-fechar" id="fechar-modal-cadastro">&times;</button>
+            
+            <header class="cabecalho" style="margin-bottom: 15px;">
+                <h2>📝 Cadastre-se</h2>
+                <p>Crie sua conta no nosso sistema</p>
+            </header>
+
+            <form id="form-cadastro">
+                <div class="grupo-formulario">
+                    <label for="cad-nome">Nome Completo:</label>
+                    <input type="text" id="cad-nome" class="campo-entrada" placeholder="Digite seu nome" required>
+                </div>
+                
+                <div class="grupo-formulario">
+                    <label for="cad-celular">Celular (WhatsApp):</label>
+                    <input type="tel" id="cad-celular" class="campo-entrada" placeholder="(00) 00000-0000" required>
+                </div>
+                
+                <div class="grupo-formulario">
+                    <label for="cad-email">E-mail:</label>
+                    <input type="email" id="cad-email" class="campo-entrada" placeholder="seu@email.com" required>
+                </div>
+
+                <div class="grupo-formulario">
+                    <label for="cad-nascimento">Data de Nascimento:</label>
+                    <input type="date" id="cad-nascimento" class="campo-entrada" required>
+                </div>
+                
+                <div class="grupo-formulario">
+                    <label for="cad-senha">Senha:</label>
+                    <input type="password" id="cad-senha" class="campo-entrada" placeholder="Crie uma senha" required>
+                </div>
+
+                <div class="grupo-formulario">
+                    <label for="cad-confirmar-senha">Confirmar Senha:</label>
+                    <input type="password" id="cad-confirmar-senha" class="campo-entrada" placeholder="Repita a senha" required>
+                </div>
+                
+                <button type="submit" class="btn-primario" style="width: 100%; margin-top: 10px;">Finalizar Cadastro</button>
+            </form>
         </div>
     </div>
 

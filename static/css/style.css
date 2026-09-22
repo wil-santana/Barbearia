@@ -343,3 +343,231 @@ select {
         transform: translateY(0);
     }
 }
+
+/* =========================================
+   TEMA ESCURO (PÁGINA INDEX)
+   ========================================= */
+
+/* Fundo preto suave para a página inteira */
+body.pagina-escura {
+    background-color: #121212 !important; 
+    color: #FFD700 !important; 
+}
+
+/* Cartão central com fundo escuro e letras amarelas */
+body.pagina-escura .cartao {
+    background-color: #1a1a1a !important; /* Um tom levemente diferente para destacar o cartão */
+    color: #FFD700 !important;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.8);
+    border: 1px solid #333; /* Borda sutil no cartão para não sumir no fundo */
+}
+
+/* Forçando a cor amarela em todos os textos (títulos, parágrafos, labels e links) */
+body.pagina-escura h1, 
+body.pagina-escura h2, 
+body.pagina-escura p, 
+body.pagina-escura label, 
+body.pagina-escura span,
+body.pagina-escura .manter,
+body.pagina-escura .links-uteis a {
+    color: #FFD700 !important;
+}
+
+/* Efeito ao passar o mouse nos links */
+body.pagina-escura .links-uteis a:hover {
+    color: #FFF !important; /* Fica branco ao passar o mouse */
+}
+
+/* Ajuste das caixas de texto (Inputs) para o tema escuro */
+body.pagina-escura input, 
+body.pagina-escura select {
+    background-color: #222 !important;
+    color: #FFD700 !important; /* Texto digitado em amarelo */
+    border: 1px solid #444 !important;
+}
+
+body.pagina-escura input:focus, 
+body.pagina-escura select:focus {
+    border-color: #FFF !important; /* Borda branca ao clicar no input */
+}
+
+/* =========================================
+   BOTÕES COM BORDA BRANCA E TEXTO AMARELO
+   ========================================= */
+body.pagina-escura .btn-entrar,
+body.pagina-escura .btn-primario,
+body.pagina-escura .btn-secundario,
+body.pagina-escura .btn-terciario,
+body.pagina-escura .btn-confirmar {
+    background-color: transparent !important; /* Fundo transparente */
+    color: #FFD700 !important;                /* Letras amarelas */
+    border: 2px solid #FFFFFF !important;     /* Borda fina branca */
+    transition: all 0.3s ease;
+}
+
+/* Efeito Hover: Inverte as cores ao passar o mouse para dar vida ao botão */
+body.pagina-escura .btn-entrar:hover,
+body.pagina-escura .btn-primario:hover,
+body.pagina-escura .btn-secundario:hover,
+body.pagina-escura .btn-terciario:hover,
+body.pagina-escura .btn-confirmar:hover {
+    background-color: #FFFFFF !important;     /* Fundo fica branco */
+    color: #121212 !important;                /* Letra fica preta */
+    border-color: #FFFFFF !important;
+}
+
+/* ========================================= */
+/* AJUSTES PARA COMPACTAR O MODAL DE CADASTRO */
+/* ========================================= */
+
+/* Reduz o espaço entre cada campo (label + input) */
+#modal-cadastro .grupo-formulario {
+    margin-bottom: 8px; 
+}
+
+/* Diminui um pouco o tamanho da fonte do título do campo */
+#modal-cadastro .grupo-formulario label {
+    font-size: 13px;
+    margin-bottom: 3px;
+}
+
+/* Reduz a altura interna (padding) dos inputs de digitação */
+#modal-cadastro .campo-entrada {
+    padding: 8px 10px;
+    font-size: 14px;
+}
+
+/* Reduz a altura do botão de Finalizar Cadastro e o espaço acima dele */
+#modal-cadastro .btn-primario {
+    padding: 10px;
+    font-size: 15px;
+    margin-top: 5px !important; 
+}
+
+/* Diminui a margem do cabeçalho do modal para ganhar espaço no topo */
+#modal-cadastro .cabecalho {
+    margin-bottom: 10px !important;
+}
+
+/* ========================================= */
+/* ESTILIZAÇÃO DO ÍCONE DE CALENDÁRIO (DATE) */
+/* ========================================= */
+
+/* 1. Deixa o pop-up do calendário no modo escuro para combinar com o site */
+input[type="date"] {
+    color-scheme: dark;
+}
+
+/* 2. Troca o ícone de calendário preto padrão por um amarelo ouro */
+input[type="date"]::-webkit-calendar-picker-indicator {
+    cursor: pointer;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23FFD700'%3E%3Cpath d='M19 3h-1V1h-2v2H8V1H6v2H5c-1.11 0-2 .9-2 2v14c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V8h14v11z'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: center;
+    background-size: contain;
+}
+
+/* ========================================= */
+/* ESTILOS EXCLUSIVOS DO PAINEL ADMIN        */
+/* ========================================= */
+
+.container-admin {
+    max-width: 900px;
+}
+
+.titulo-secao {
+    margin-bottom: 15px;
+    border-bottom: 1px solid #333;
+    padding-bottom: 10px;
+}
+
+.bloco-controle-agenda {
+    margin-bottom: 20px;
+}
+
+.bloco-controle {
+    margin-bottom: 20px;
+}
+
+.label-controle {
+    font-weight: bold;
+    display: block;
+    margin-bottom: 10px;
+}
+
+.grupo-checkbox-admin {
+    display: flex;
+    gap: 20px;
+    flex-wrap: wrap;
+    align-items: center;
+}
+
+.linha-controles {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+.campo-auto {
+    width: auto;
+    flex: 1;
+    min-width: 150px;
+}
+
+.btn-pequeno {
+    width: auto;
+    padding: 8px 15px;
+    margin: 0;
+    font-size: 14px;
+}
+
+.bloco-regras {
+    margin-top: 20px;
+}
+
+.lista-regras {
+    list-style: none;
+    padding: 0;
+    margin-top: 10px;
+}
+
+.item-regra {
+    padding: 10px;
+    border: 1px solid #333;
+    margin-bottom: 5px;
+    border-radius: 5px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background-color: #1a1a1a;
+}
+
+.btn-remover {
+    background: none;
+    border: none;
+    color: #dc3545;
+    cursor: pointer;
+    font-weight: bold;
+    font-size: 14px;
+}
+
+.btn-remover:hover {
+    text-decoration: underline;
+}
+
+.btn-cancelar-admin {
+    background-color: #dc3545;
+    color: white;
+    border: none;
+    padding: 5px 10px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 12px;
+}
+
+.link-cliente {
+    color: #0d6efd;
+    font-weight: bold;
+    text-decoration: none;
+}

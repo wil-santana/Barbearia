@@ -7,15 +7,52 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
 </head>
 <body>
-    <main class="container" style="max-width: 900px;">
+    <main class="container container-admin">
         <header class="cabecalho">
             <h2>⚙️ Painel Administrativo</h2>
-            <p>Gerenciamento geral de agendamentos da barbearia</p>
+            <p>Gerenciamento geral de agendamentos e agenda da barbearia</p>
         </header>
 
-        <section class="cartao">
-            <h3>Todos os Agendamentos do Sistema</h3>
+        <!-- CONTROLE DE AGENDA -->
+        <section class="cartao bloco-controle-agenda">
+            <h3 class="titulo-secao">📅 Controle de Dias de Funcionamento</h3>
             
+            <!-- Controle de Dias Fixos -->
+            <div class="bloco-controle">
+                <label class="label-controle">Dias fixos que a barbearia é FECHADA:</label>
+                <div class="grupo-checkbox-admin">
+                    <label><input type="checkbox" id="check-domingo" value="0"> Domingo</label>
+                    <label><input type="checkbox" id="check-segunda" value="1"> Segunda-feira</label>
+                    <label><input type="checkbox" id="check-terca" value="2"> Terça-feira</label>
+                    <button id="btn-salvar-fixos" class="btn-primario btn-pequeno">Salvar Padrão</button>
+                </div>
+            </div>
+
+            <!-- Controle de Datas Específicas (Exceções) -->
+            <div class="bloco-controle">
+                <label class="label-controle">Exceções (Feriados ou Aberturas Extras):</label>
+                <div class="linha-controles">
+                    <input type="date" id="data-excecao" class="campo-entrada campo-auto">
+                    <select id="tipo-excecao" class="campo-entrada campo-auto">
+                        <option value="fechado">🔴 Bloquear Data (Feriado/Folga)</option>
+                        <option value="aberto">🟢 Liberar Data (Domingo Extra/Exceção)</option>
+                    </select>
+                    <button id="btn-add-excecao" class="btn-confirmar">Adicionar Regra</button>
+                </div>
+            </div>
+
+            <!-- Lista de regras criadas -->
+            <div class="bloco-regras">
+                <strong>Regras Ativas:</strong>
+                <ul id="lista-excecoes" class="lista-regras">
+                    <!-- As exceções aparecerão aqui via JavaScript -->
+                </ul>
+            </div>
+        </section>
+
+        <!-- TABELA DE AGENDAMENTOS -->
+        <section class="cartao">
+            <h3 class="titulo-secao">Todos os Agendamentos do Sistema</h3>
             <div class="tabela-container">
                 <table class="tabela-agendamentos">
                     <thead>
@@ -33,9 +70,9 @@
                         <tr>
                             <td>
                                 {% if reserva.usuario_id %}
-                                    <a href="/admin/cliente/{{ reserva.usuario_id }}" style="color: #0d6efd; font-weight: bold; text-decoration: none;">{{ reserva.cliente_nome }}</a>
+                                    <a href="/admin/cliente/{{ reserva.usuario_id }}" class="link-cliente">{{ reserva.cliente_nome }}</a>
                                 {% else %}
-                                    <strong>{{ reserva.cliente_nome }}</strong> <span style="font-size: 11px; color: #666;">(Visitante)</span>
+                                    <strong>{{ reserva.cliente_nome }}</strong> <span class="texto-suave">(Visitante)</span>
                                 {% endif %}
                             </td>
                             <td>{{ reserva.cliente_telefone }}</td>
@@ -46,7 +83,7 @@
                             </td>
                             <td>
                                 {% if reserva.status == 'Agendado' %}
-                                <button class="btn-cancelar-admin" data-id="{{ reserva.id }}" style="background-color: #dc3545; color: white; border: none; padding: 5px 10px; border-radius: 4px; cursor: pointer; font-size: 12px;">Cancelar</button>
+                                <button class="btn-cancelar-admin" data-id="{{ reserva.id }}">Cancelar</button>
                                 {% else %}
                                 <span class="texto-suave">-</span>
                                 {% endif %}
@@ -60,35 +97,10 @@
                     </tbody>
                 </table>
             </div>
-
-           
         </section>
     </main>
 
-    <script>
-        // Script integrado para o botão de cancelar do Admin
-        document.querySelectorAll(".btn-cancelar-admin").forEach(botao => {
-            botao.addEventListener("click", function() {
-                const agendamentoId = this.getAttribute("data-id");
-                
-                if (confirm("Deseja realmente cancelar este agendamento pelo painel administrativo?")) {
-                    fetch('/cancelar-agendamento', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ id: agendamentoId })
-                    })
-                    .then(resposta => resposta.json())
-                    .then(dados => {
-                        if (dados.status === "sucesso") {
-                            alert("Agendamento cancelado com sucesso!");
-                            window.location.reload();
-                        } else {
-                            alert("Erro ao cancelar: " + dados.mensagem);
-                        }
-                    });
-                }
-            });
-        });
-    </script>
+    <!-- Chamando o novo arquivo JS exclusivo do Admin -->
+    <script src="{{ url_for('static', filename='js/admin.js') }}"></script>
 </body>
 </html>
