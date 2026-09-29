@@ -176,5 +176,144 @@
         "status": "Agendado",
         "id": 21,
         "usuario_id": 1
+    },
+    {
+        "cliente_nome": "P\u00e9-de-Pato",
+        "cliente_telefone": "8177777777",
+        "data_agendamento": "2026-10-04",
+        "horario": "09:30",
+        "status": "Agendado",
+        "id": 22
+    },
+    {
+        "cliente_nome": "Sapatilha mergulho",
+        "cliente_telefone": "(81)99959-0677",
+        "data_agendamento": "2026-10-04",
+        "horario": "10:00",
+        "status": "Agendado",
+        "id": 23
+    },
+    {
+        "cliente_nome": "joao",
+        "cliente_telefone": "81999999999",
+        "data_agendamento": "2026-10-04",
+        "horario": "10:30",
+        "status": "Agendado",
+        "id": 24
+    },
+    {
+        "cliente_nome": "Wilson Santana",
+        "cliente_telefone": "81999590677",
+        "data_agendamento": "2026-10-04",
+        "horario": "19:30",
+        "status": "Agendado",
+        "id": 25
+    },
+    {
+        "cliente_nome": "Wilson Santana Gomes",
+        "cliente_telefone": "81999590677",
+        "data_agendamento": "2026-09-29",
+        "horario": "09:30",
+        "status": "Cancelado",
+        "id": 26,
+        "usuario_id": 1
+    },
+    {
+        "cliente_nome": "Wilson Santana Gomes",
+        "cliente_telefone": "81999590677",
+        "data_agendamento": "2026-09-29",
+        "horario": "09:30",
+        "status": "Cancelado",
+        "id": 27,
+        "usuario_id": 1
+    },
+    {
+        "cliente_nome": "Wilson Santana Gomes",
+        "cliente_telefone": "81999590677",
+        "usuario_id": 1,
+        "data_agendamento": "2026-09-29",
+        "horario": "11:00",
+        "status": "Agendado",
+        "id": 28
+    },
+    {
+        "cliente_nome": "Wilson Santana Gomes",
+        "cliente_telefone": "81999590677",
+        "usuario_id": 1,
+        "data_agendamento": "2026-09-29",
+        "horario": "11:30",
+        "status": "Agendado",
+        "id": 29
+    },
+    {
+        "cliente_nome": "Wilson Santana",
+        "cliente_telefone": "81999999999",
+        "data_agendamento": "2026-09-29",
+        "horario": "14:00",
+        "status": "Agendado",
+        "id": 30,
+        "usuario_id": 1
+    },
+    {
+        "cliente_nome": "Wilson Santana",
+        "cliente_telefone": "81999590677",
+        "data_agendamento": "2026-10-26",
+        "horario": "14:00",
+        "status": "Agendado",
+        "id": 31,
+        "usuario_id": 1
+    },
+    {
+        "cliente_nome": "P\u00e9-de-Pato",
+        "cliente_telefone": "(81)99959-0677",
+        "data_agendamento": "2026-10-18",
+        "horario": "15:30",
+        "status": "Agendado",
+        "id": 32,
+        "usuario_id": 1
+    },
+    {
+        "cliente_nome": "Luiz eduardo",
+        "cliente_telefone": "81385588558",
+        "data_agendamento": "2026-09-30",
+        "horario": "19:30",
+        "status": "Agendado",
+        "id": 33,
+        "usuario_id": 4
+    },
+    {
+        "cliente_nome": "joao",
+        "cliente_telefone": "81999590677",
+        "data_agendamento": "2026-09-30",
+        "horario": "16:00",
+        "status": "Agendado",
+        "id": 34
+    },
+    {
+        "cliente_nome": "Wilson Santana Gomes",
+        "cliente_telefone": "81999590677",
+        "data_agendamento": "2026-09-30",
+        "horario": "09:30",
+        "status": "Agendado",
+        "id": 35,
+        "usuario_id": 1
+    },
+    {
+        "cliente_nome": "joao",
+        "cliente_telefone": "81999999999",
+        "data_agendamento": "2026-10-06",
+        "horario": "16:30",
+        "status": "Agendado",
+        "usuario_id": "2",
+        "id": 36
+    },
+    {
+        "cliente_nome": "joao",
+        "cliente_telefone": "81999999999",
+        "data_agendamento": "2026-10-10",
+        "horario": "11:30",
+        "status": "Agendado",
+        "usuario_id": "2",
+        "id": 37
     }
 ]

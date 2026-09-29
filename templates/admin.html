@@ -1,106 +1,217 @@
 <!DOCTYPE html>
+
 <html lang="pt-BR">
+
 <head>
+
     <meta charset="UTF-8">
+
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Painel do Admin - Barbearia</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+
+    <title>Painel Administrativo - Barbearia</title>
+
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/admin.css') }}">
+
 </head>
-<body>
-    <main class="container container-admin">
-        <header class="cabecalho">
-            <h2>⚙️ Painel Administrativo</h2>
-            <p>Gerenciamento geral de agendamentos e agenda da barbearia</p>
+
+<body class="admin-body">
+
+    <div class="admin-wrapper">
+
+        <header class="admin-header">
+
+            <h1>⚙️ Painel de Controle</h1>
+
+            <a href="/login" class="btn-voltar-admin">Sair</a>
+
         </header>
 
-        <!-- CONTROLE DE AGENDA -->
-        <section class="cartao bloco-controle-agenda">
-            <h3 class="titulo-secao">📅 Controle de Dias de Funcionamento</h3>
-            
-            <!-- Controle de Dias Fixos -->
-            <div class="bloco-controle">
-                <label class="label-controle">Dias fixos que a barbearia é FECHADA:</label>
-                <div class="grupo-checkbox-admin">
-                    <label><input type="checkbox" id="check-domingo" value="0"> Domingo</label>
-                    <label><input type="checkbox" id="check-segunda" value="1"> Segunda-feira</label>
-                    <label><input type="checkbox" id="check-terca" value="2"> Terça-feira</label>
-                    <button id="btn-salvar-fixos" class="btn-primario btn-pequeno">Salvar Padrão</button>
-                </div>
+
+
+        <div class="admin-grid">
+
+            <!-- Cartão 1: Dias Fixos -->
+
+            <div class="admin-card">
+
+                <h3>📅 Dias Fixos Fechados</h3>
+
+               <div class="dias-semana-grupo">
+
+    <label><input type="checkbox" class="check-dia" value="0"> Domingo</label>
+
+    <label><input type="checkbox" class="check-dia" value="1"> Segunda-feira</label>
+
+   
+
+    <!-- Linha especial para o Sábado com as opções -->
+
+    <div style="display: flex; align-items: center; gap: 10px; margin-top: 8px; flex-wrap: wrap;">
+
+        <label><input type="checkbox" class="check-dia" value="6" id="check-sabado"> Sábado</label>
+
+       
+
+        <select id="opcao-sabado" class="campo-entrada escondido" style="width: auto; padding: 6px; font-size: 0.9rem;">
+
+            <option value="dia_todo">Fechado o dia todo</option>
+
+            <option value="meio_periodo">Aberto só até as 13:00</option>
+
+        </select>
+
+    </div>
+
+</div>
+
+                <button id="btn-salvar-fixos" class="btn-acao">Salvar Dias</button>
+
             </div>
 
-            <!-- Controle de Datas Específicas (Exceções) -->
-            <div class="bloco-controle">
-                <label class="label-controle">Exceções (Feriados ou Aberturas Extras):</label>
-                <div class="linha-controles">
-                    <input type="date" id="data-excecao" class="campo-entrada campo-auto">
-                    <select id="tipo-excecao" class="campo-entrada campo-auto">
-                        <option value="fechado">🔴 Bloquear Data (Feriado/Folga)</option>
-                        <option value="aberto">🟢 Liberar Data (Domingo Extra/Exceção)</option>
+
+
+            <!-- Cartão 2: Exceções e Feriados -->
+
+            <div class="admin-card">
+
+                <h3>⚡ Feriados e Exceções</h3>
+
+                <div class="form-row">
+
+                    <input type="date" id="data-excecao" class="campo-entrada">
+
+                    <select id="tipo-excecao" class="campo-entrada">
+
+                        <option value="fechado">🔴 Fechado (Feriado)</option>
+
+                        <option value="aberto">🟢 Aberto (Extra)</option>
+
                     </select>
-                    <button id="btn-add-excecao" class="btn-confirmar">Adicionar Regra</button>
+
                 </div>
+
+                <button id="btn-add-excecao" class="btn-acao btn-full">Adicionar Regra</button>
+
+               
+
+                <ul id="lista-excecoes" class="lista-regras"></ul>
+
             </div>
 
-            <!-- Lista de regras criadas -->
-            <div class="bloco-regras">
-                <strong>Regras Ativas:</strong>
-                <ul id="lista-excecoes" class="lista-regras">
-                    <!-- As exceções aparecerão aqui via JavaScript -->
-                </ul>
-            </div>
-        </section>
+        </div>
 
-        <!-- TABELA DE AGENDAMENTOS -->
-        <section class="cartao">
-            <h3 class="titulo-secao">Todos os Agendamentos do Sistema</h3>
-            <div class="tabela-container">
-                <table class="tabela-agendamentos">
+
+
+        <!-- Cartão 3: Tabela de Agendamentos -->
+
+        <div class="admin-card tabela-card">
+
+            <h3>📋 Histórico de Agendamentos</h3>
+
+            <div class="table-responsive">
+
+                <table>
+
                     <thead>
-                        <tr>
-                            <th>Cliente</th>
-                            <th>Telefone</th>
-                            <th>Data</th>
-                            <th>Horário</th>
-                            <th>Status</th>
-                            <th>Ações</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for reserva in agendamentos %}
-                        <tr>
-                            <td>
-                                {% if reserva.usuario_id %}
-                                    <a href="/admin/cliente/{{ reserva.usuario_id }}" class="link-cliente">{{ reserva.cliente_nome }}</a>
-                                {% else %}
-                                    <strong>{{ reserva.cliente_nome }}</strong> <span class="texto-suave">(Visitante)</span>
-                                {% endif %}
-                            </td>
-                            <td>{{ reserva.cliente_telefone }}</td>
-                            <td>{{ reserva.data_agendamento }}</td>
-                            <td>{{ reserva.horario }}</td>
-                            <td>
-                                <span class="badge {{ reserva.status | lower }}">{{ reserva.status }}</span>
-                            </td>
-                            <td>
-                                {% if reserva.status == 'Agendado' %}
-                                <button class="btn-cancelar-admin" data-id="{{ reserva.id }}">Cancelar</button>
-                                {% else %}
-                                <span class="texto-suave">-</span>
-                                {% endif %}
-                            </td>
-                        </tr>
-                        {% else %}
-                        <tr>
-                            <td colspan="6" class="tabela-vazia">Nenhum agendamento registrado no sistema.</td>
-                        </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
-            </div>
-        </section>
-    </main>
 
-    <!-- Chamando o novo arquivo JS exclusivo do Admin -->
-    <script src="{{ url_for('static', filename='js/admin.js') }}"></script>
+                        <tr>
+
+                            <th>Cliente</th>
+
+                            <th>Data / Hora</th>
+
+                            <th>Status</th>
+
+                            <th>Ações</th>
+
+                        </tr>
+
+                    </thead>
+
+                    <tbody>
+
+                        {% if agendamentos %}
+
+                            {% for a in agendamentos %}
+
+                            <tr>
+
+                                <td>
+
+                                    {% if a.usuario_id %}
+
+                                        <a href="{{ url_for('admin_ver_cliente', usuario_id=a.usuario_id) }}" class="link-cliente">
+
+                                            {{ a.cliente_nome }} 👤
+
+                                        </a>
+
+                                    {% else %}
+
+                                        {{ a.cliente_nome }} <small>(Visitante)</small>
+
+                                    {% endif %}
+
+                                    <br><span style="font-size: 0.75rem; color: #aaa;">{{ a.cliente_telefone }}</span>
+
+                                </td>
+
+                                <td>{{ a.data_agendamento }}<br><b>{{ a.horario }}</b></td>
+
+                                <td>
+
+                                    {% set st = a.status | lower %}
+
+                                    <span class="badge {{ 'agendado' if 'agendado' in st else ('concluido' if 'concluido' in st else 'cancelado') }}">
+
+                                        {{ a.status }}
+
+                                    </span>
+
+                                </td>
+
+                                <td>
+
+                                    {% if a.status == 'Agendado' %}
+
+                                        <button class="btn-cancelar-admin" data-id="{{ a.id }}">Cancelar</button>
+
+                                    {% else %}
+
+                                        -
+
+                                    {% endif %}
+
+                                </td>
+
+                            </tr>
+
+                            {% endfor %}
+
+                        {% else %}
+
+                            <tr>
+
+                                <td colspan="4" class="vazio">Nenhum agendamento registrado.</td>
+
+                            </tr>
+
+                        {% endif %}
+
+                    </tbody>
+
+                </table>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+
+    <script src="{{ url_for('static', filename='js/admin.js') }}?v=6"></script>
+
 </body>
-</html>
+
+</html> 

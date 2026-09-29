@@ -89,7 +89,7 @@ def agendar():
         # 2. Validação de segurança: dias fechados, feriados e exceções
         config = ler_config_agenda()
         data_obj = datetime.strptime(data_reserva, '%Y-%m-%d').date()
-        dia_semana_js = (data_obj.weekday() + 1) % 7  # 0=Domingo, 1=Segunda... 6=Sábado
+        dia_semana_js = (data_obj.weekday() + 1) % 7  # 0=Domingo... 6=Sábado
         
         status_excecao = config["excecoes"].get(data_reserva)
         permitido = True
@@ -100,10 +100,18 @@ def agendar():
             permitido = True
         else:
             if dia_semana_js in config.get("dias_fechados", []):
-                permitido = False
+                # NOVO: Libera a manhã se for sábado meio período
+                if dia_semana_js == 6 and config.get("regra_sabado") == "meio_periodo":
+                    horas, minutos = map(int, horario_reserva.split(':'))
+                    total_minutos = horas * 60 + minutos
+                    # Se for maior que 13:00 (780 min), bloqueia
+                    if total_minutos > 780:
+                        permitido = False
+                else:
+                    permitido = False
                 
         if not permitido:
-            return jsonify({"status": "erro", "mensagem": "A barbearia está fechada nesta data!"}), 400
+            return jsonify({"status": "erro", "mensagem": "Horário indisponível. A barbearia pode estar fechada nesta data ou horário!"}), 400
 
         # Continua o salvamento normal...
         with FileLock(f"{ARQUIVO_AGENDAMENTOS}.lock"):
@@ -542,9 +550,17 @@ def get_config_agenda():
 @app.route('/admin/salvar-dias-fixos', methods=['POST'])
 def salvar_dias_fixos():
     dados_req = request.get_json()
-    config = ler_config_agenda()
+    
+    # Usa a sua função que já lê e protege o arquivo
+    config = ler_config_agenda() 
+    
+    # Atualiza as informações
     config["dias_fechados"] = dados_req.get("dias_fechados", [])
-    salvar_config_agenda(config)
+    config["regra_sabado"] = dados_req.get("regra_sabado", "dia_todo")
+    
+    # Usa a sua função que já salva com segurança
+    salvar_config_agenda(config) 
+    
     return jsonify({"status": "sucesso"})
 
 @app.route('/admin/add-excecao', methods=['POST'])

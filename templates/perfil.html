@@ -13,8 +13,6 @@
             <p>Gerencie seus agendamentos e seu histórico</p>
         </header>
 
-        
-
         <section class="cartao" id="secao-form-perfil">
             <h3>Editar Dados</h3>
             <form id="formPerfil">
@@ -68,7 +66,10 @@
                             <td>{{ reserva.data_agendamento }}</td>
                             <td><strong>{{ reserva.horario }}</strong></td>
                             <td>
-                                <span class="badge {{ reserva.status | lower }}">{{ reserva.status }}</span>
+                                {% set st = reserva.status | lower %}
+                                <span class="badge {{ 'agendado' if 'agendado' in st else ('concluido' if 'concluido' in st else 'cancelado') }}">
+                                    {{ reserva.status }}
+                                </span>
                             </td>
                             <td>
                                 {% if reserva.status == 'Agendado' %}
@@ -87,12 +88,76 @@
                 </table>
             </div>
 
-            <a href="/agendar-logado" class="btn-primario btn-novo-agendamento">Novo Agendamento</a>
+            <!-- Botão que abre o modal -->
+            <button type="button" id="btn-abrir-modal-agendar" class="btn-primario btn-novo-agendamento">Novo Agendamento</button>
             <button type="button" id="btn-toggle-perfil" class="btn-secundario btn-largura-total">Atualizar Dados</button>
-            <a href="/logout" class="btn-secundario btn-sair">Sair da Conta</a>
+            <a href="/logout" class="btn-sair">Sair da Conta</a>
         </section>
     </main>
 
-    <script src="{{ url_for('static', filename='js/script.js') }}"></script>
+    <!-- ========================================= -->
+    <!-- MODAL DE AGENDAMENTO RÁPIDO (LOGADO)      -->
+    <!-- ========================================= -->
+    <div id="modal-agendar" class="modal-overlay escondido">
+        <div class="modal-conteudo cartao marca-dagua-container">
+            <button type="button" class="btn-fechar" id="fechar-modal-agendar">&times;</button>
+            
+            <header class="cabecalho" style="margin-bottom: 15px;">
+                <h2>✂️ Agendamento Rápido</h2>
+                <p>Olá, {{ usuario.nome }}! Escolha seu horário</p>
+            </header>
+
+            <div class="grupo-formulario">
+                <label for="data-logado">1. Selecione uma data:</label>
+                <input type="date" id="data-logado" class="campo-entrada">
+            </div>
+            
+            <div class="grupo-formulario">
+                <label for="nome-logado">Seu Nome:</label>
+                <input type="text" id="nome-logado" class="campo-entrada" value="{{ usuario.nome }}" readonly style="background-color: #f3f4f6; color: #9ca3af; cursor: not-allowed;">
+            </div>
+            
+            <div class="grupo-formulario">
+                <label for="telefone-logado">WhatsApp:</label>
+                <input type="text" id="telefone-logado" class="campo-entrada" value="{{ usuario.celular }}" readonly style="background-color: #f3f4f6; color: #9ca3af; cursor: not-allowed;">
+            </div>
+            
+            <!-- ID Invisível do Cliente -->
+            <input type="hidden" id="usuario-id" value="{{ usuario.id }}">
+            
+            <div class="grupo-formulario">
+                <label for="horario-logado">4. Escolha o horário:</label>
+                <select id="horario-logado" class="campo-entrada">
+                    <option value="" disabled selected>Escolha seu horário...</option>
+                    <option value="08:00">08:00</option>
+                    <option value="08:30">08:30</option>
+                    <option value="09:00">09:00</option>
+                    <option value="09:30">09:30</option>
+                    <option value="10:00">10:00</option>
+                    <option value="10:30">10:30</option>
+                    <option value="11:00">11:00</option>
+                    <option value="11:30">11:30</option>
+                    <option value="13:00">13:00</option>
+                    <option value="13:30">13:30</option>
+                    <option value="14:00">14:00</option>
+                    <option value="14:30">14:30</option>
+                    <option value="15:00">15:00</option>
+                    <option value="15:30">15:30</option>
+                    <option value="16:00">16:00</option>
+                    <option value="16:30">16:30</option>
+                    <option value="17:00">17:00</option>
+                    <option value="17:30">17:30</option>
+                    <option value="18:00">18:00</option>
+                    <option value="18:30">18:30</option>
+                    <option value="19:00">19:00</option>
+                    <option value="19:30">19:30</option>
+                </select>
+            </div>
+            
+            <button id="btn-confirmar-agendamento-logado" class="btn-primario">Confirmar Agendamento</button>
+        </div>
+    </div>
+
+    <script src="{{ url_for('static', filename='js/script.js') }}?v=4"></script>
 </body>
 </html>

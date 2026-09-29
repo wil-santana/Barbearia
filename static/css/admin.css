@@ -1,0 +1,228 @@
+/* =========================================
+   PAINEL ADMINISTRATIVO (MOBILE FIRST)
+========================================= */
+body.admin-body {
+    background-color: #121212;
+    color: #f8f9fa;
+    margin: 0;
+    padding: 10px;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+.admin-wrapper {
+    max-width: 100%;
+    margin: 0 auto;
+    box-sizing: border-box;
+}
+
+.admin-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: #1e1e1e;
+    padding: 15px;
+    border-radius: 8px;
+    margin-bottom: 15px;
+    border: 1px solid #333;
+}
+
+.admin-header h1 {
+    font-size: 1.1rem;
+    margin: 0;
+    color: #FFD700;
+}
+
+.btn-voltar-admin {
+    background: #333;
+    color: #fff;
+    padding: 8px 12px;
+    border-radius: 6px;
+    text-decoration: none;
+    font-size: 0.85rem;
+}
+
+.admin-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    margin-bottom: 15px;
+}
+
+.admin-card {
+    background: #1e1e1e;
+    padding: 15px;
+    border-radius: 8px;
+    border: 1px solid #333;
+    box-sizing: border-box;
+}
+
+.admin-card h3 {
+    margin-top: 0;
+    font-size: 0.95rem;
+    border-bottom: 1px solid #333;
+    padding-bottom: 8px;
+    margin-bottom: 15px;
+    color: #FFD700;
+}
+
+.dias-semana-grupo {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    margin-bottom: 15px;
+}
+
+.dias-semana-grupo label {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 0.95rem;
+    cursor: pointer;
+}
+
+.dias-semana-grupo input[type="checkbox"] {
+    width: 20px;
+    height: 20px;
+    accent-color: #FFD700;
+}
+
+.form-row {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-bottom: 10px;
+}
+
+.form-row input, .form-row select {
+    width: 100%;
+    padding: 12px;
+    border: 1px solid #444;
+    background: #2a2a2a;
+    color: #fff;
+    border-radius: 6px;
+    font-size: 0.95rem;
+    box-sizing: border-box;
+}
+
+.btn-acao {
+    background: #FFD700;
+    color: #121212;
+    border: none;
+    padding: 12px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: bold;
+    font-size: 0.95rem;
+    width: 100%;
+}
+
+.lista-regras {
+    list-style: none;
+    padding: 0;
+    margin: 15px 0 0 0;
+    max-height: 150px;
+    overflow-y: auto;
+}
+
+.item-regra {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 0;
+    border-bottom: 1px solid #333;
+    font-size: 0.85rem;
+}
+
+.btn-remover {
+    background: #dc3545;
+    color: white;
+    border: none;
+    padding: 4px 8px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 0.75rem;
+}
+
+/* Tabela Otimizada para Celular */
+.table-responsive {
+    width: 100%;
+    overflow-x: auto;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.8rem;
+    text-align: left;
+}
+
+th, td {
+    padding: 10px 6px;
+    border-bottom: 1px solid #333;
+    vertical-align: middle;
+}
+
+th {
+    background-color: #262626;
+    color: #aaa;
+}
+
+.badge {
+    padding: 3px 6px;
+    border-radius: 12px;
+    font-size: 0.7rem;
+    font-weight: bold;
+}
+
+.badge.agendado { background: #1e3a8a; color: #93c5fd; }
+.badge.concluido { background: #065f46; color: #6ee7b7; }
+.badge.cancelado { background: #7f1d1d; color: #fca5a5; }
+
+.link-cliente {
+    color: #60a5fa;
+    text-decoration: none;
+    font-weight: bold;
+}
+
+.btn-cancelar-admin {
+    background: #dc3545;
+    color: white;
+    border: none;
+    padding: 6px 8px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 0.7rem;
+}
+
+.vazio {
+    text-align: center;
+    color: #777;
+    padding: 20px;
+}
+
+/* Responsividade para telas maiores (Desktop/Tablet) */
+@media (min-width: 768px) {
+    .admin-wrapper {
+        max-width: 900px;
+        padding: 20px;
+    }
+    .admin-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 20px;
+    }
+    .form-row {
+        flex-direction: row;
+    }
+    .dias-semana-grupo {
+        flex-direction: row;
+        gap: 20px;
+    }
+    table {
+        font-size: 0.9rem;
+    }
+    th, td {
+        padding: 12px 12px;
+    }
+}
+

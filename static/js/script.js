@@ -41,21 +41,17 @@ document.addEventListener("DOMContentLoaded", function() {
             const dataEscolhida = this.value;
             if (!dataEscolhida) return;
 
-            // 1. PRIMEIRO: Consulta o servidor para ver se o dia é fechado ou exceção
             fetch('/admin/config-agenda')
             .then(res => res.json())
             .then(config => {
-                const dataObj = new Date(dataEscolhida + 'T00:00:00'); // Corrige fuso horário
-                const diaSemana = dataObj.getDay(); // 0 = Domingo, 1 = Segunda...
-                
+                const dataObj = new Date(dataEscolhida + 'T00:00:00'); 
+                const diaSemana = dataObj.getDay(); 
                 let fechado = false;
                 
-                // Verifica se há exceção cadastrada para essa data exata
                 if (config.excecoes && config.excecoes[dataEscolhida] !== undefined) {
                     if (config.excecoes[dataEscolhida] === 'fechado') fechado = true;
                     if (config.excecoes[dataEscolhida] === 'aberto') fechado = false;
                 } else {
-                    // Verifica se o dia da semana é fixo fechado
                     if (config.dias_fechados && config.dias_fechados.includes(diaSemana)) {
                         fechado = true;
                     }
@@ -63,15 +59,13 @@ document.addEventListener("DOMContentLoaded", function() {
 
                 if (fechado) {
                     alert("A barbearia está fechada nesta data!");
-                    inputData.value = ""; // Limpa a data escolhida
-                    // Desabilita os horários
+                    inputData.value = ""; 
                     Array.from(selectHorario.options).forEach(opcao => {
                         if (opcao.value !== "") opcao.disabled = true;
                     });
-                    return; // Para a execução aqui
+                    return; 
                 }
 
-                // 2. RESTO DA LÓGICA (Datas passadas e horários ocupados)
                 const agora = new Date();
                 const ano = agora.getFullYear();
                 const mes = String(agora.getMonth() + 1).padStart(2, '0');
@@ -122,8 +116,8 @@ document.addEventListener("DOMContentLoaded", function() {
             });
         });
     }
-    // Enviar agendamento via AJAX
-    if (btnAgendar) {
+
+    if (btnAgendar && !document.getElementById("btn-confirmar-agendamento-logado")) { 
         btnAgendar.addEventListener("click", function(e) {
             e.preventDefault(); 
             
@@ -252,21 +246,18 @@ document.addEventListener("DOMContentLoaded", function() {
     const btnFecharCadastro = document.getElementById("fechar-modal-cadastro");
     const linkAbrirCadastro = document.getElementById("link-abrir-cadastro");
 
-    // Abrir pelo botão principal
     if (btnAbrirCadastro && modalCadastro) {
         btnAbrirCadastro.addEventListener("click", () => {
             modalCadastro.classList.remove("escondido");
         });
     }
 
-    // Fechar no X
     if (btnFecharCadastro && modalCadastro) {
         btnFecharCadastro.addEventListener("click", () => {
             modalCadastro.classList.add("escondido");
         });
     }
 
-    // Fechar clicando fora
     if (modalCadastro) {
         window.addEventListener("click", (e) => {
             if (e.target === modalCadastro) {
@@ -275,23 +266,20 @@ document.addEventListener("DOMContentLoaded", function() {
         });
     }
 
-    // Trocar do Login pro Cadastro (clicando no link dentro do modal de login)
     if (linkAbrirCadastro && modalLogin && modalCadastro) {
         linkAbrirCadastro.addEventListener("click", (e) => {
-            e.preventDefault(); // Evita recarregar a página
-            modalLogin.classList.add("escondido"); // Esconde o login
-            modalCadastro.classList.remove("escondido"); // Mostra o cadastro
+            e.preventDefault(); 
+            modalLogin.classList.add("escondido"); 
+            modalCadastro.classList.remove("escondido"); 
         });
     }
 
-    // Ação do formulário de Cadastro
     const formCadastro = document.getElementById("form-cadastro");
     if (formCadastro) {
         formCadastro.addEventListener("submit", function(event) {
             event.preventDefault();
             
             const btnSubmit = formCadastro.querySelector('button[type="submit"]');
-            
             const nome = document.getElementById("cad-nome").value;
             const celular = document.getElementById("cad-celular").value;
             const email = document.getElementById("cad-email").value;
@@ -319,12 +307,9 @@ document.addEventListener("DOMContentLoaded", function() {
             .then(dados => {
                 if(dados.status === "sucesso") {
                     alert("Cadastro realizado com sucesso! Faça seu login.");
-                    
-                    // Transição Mágica: Esconde Cadastro e Mostra Login automático!
                     formCadastro.reset();
                     modalCadastro.classList.add("escondido");
                     if(modalLogin) modalLogin.classList.remove("escondido");
-                    
                 } else {
                     alert("Erro: " + dados.mensagem);
                 }
@@ -490,5 +475,188 @@ document.addEventListener("DOMContentLoaded", function() {
             }
         });
     });
+
+   // ==========================================
+    // 8. MODAL DE AGENDAMENTO (CLIENTE LOGADO)
+    // ==========================================
+    const modalAgendarLogado = document.getElementById("modal-agendar");
+    const btnAbrirModalAgendar = document.getElementById("btn-abrir-modal-agendar");
+    const btnFecharModalAgendar = document.getElementById("fechar-modal-agendar");
+    const inputDataLogado = document.getElementById("data-logado");
+    const selectHorarioLogado = document.getElementById("horario-logado");
+    const btnConfirmarLogado = document.getElementById("btn-confirmar-agendamento-logado");
+
+    if (btnAbrirModalAgendar && modalAgendarLogado) {
+        btnAbrirModalAgendar.addEventListener("click", () => {
+            modalAgendarLogado.classList.remove("escondido");
+            const hojeStr = new Date().toISOString().split('T')[0];
+            if(inputDataLogado) inputDataLogado.setAttribute('min', hojeStr);
+        });
+    }
+
+    if (btnFecharModalAgendar && modalAgendarLogado) {
+        btnFecharModalAgendar.addEventListener("click", () => {
+            modalAgendarLogado.classList.add("escondido");
+        });
+    }
+
+    if (modalAgendarLogado) {
+        window.addEventListener("click", (e) => {
+            if (e.target === modalAgendarLogado) {
+                modalAgendarLogado.classList.add("escondido");
+            }
+        });
+    }
+    
+    // Validação de datas e horários bloqueados para cliente logado
+    if (inputDataLogado && selectHorarioLogado) {
+       inputDataLogado.addEventListener("change", function() {
+            const dataEscolhida = this.value;
+            if (!dataEscolhida) return;
+
+            // Busca as regras no banco de dados sem usar cache
+            fetch('/admin/config-agenda?t=' + new Date().getTime())
+            .then(res => res.json())
+            .then(config => {
+                const dataObj = new Date(dataEscolhida + 'T00:00:00'); 
+                const diaSemana = dataObj.getDay(); 
+                let fechado = false;
+                let sabadoMeioPeriodo = false;
+                
+                // Força o Javascript a ler a lista de dias como números inteiros
+                const diasFechados = (config.dias_fechados || []).map(num => parseInt(num));
+                
+                if (config.excecoes && config.excecoes[dataEscolhida] !== undefined) {
+                    if (config.excecoes[dataEscolhida] === 'fechado') fechado = true;
+                    if (config.excecoes[dataEscolhida] === 'aberto') fechado = false;
+                } else {
+                    if (diasFechados.includes(diaSemana)) {
+                        // Se for Sábado (6) e estiver marcado como meio período
+                        if (diaSemana === 6 && config.regra_sabado === 'meio_periodo') {
+                            fechado = false; 
+                            sabadoMeioPeriodo = true;
+                        } else {
+                            fechado = true;
+                        }
+                    }
+                }
+
+                if (fechado) {
+                    alert("A barbearia está fechada nesta data!");
+                    inputDataLogado.value = ""; 
+                    Array.from(selectHorarioLogado.options).forEach(opcao => {
+                        if (opcao.value !== "") opcao.disabled = true;
+                    });
+                    return; 
+                }
+
+                const agora = new Date();
+                const hojeStr = `${agora.getFullYear()}-${String(agora.getMonth() + 1).padStart(2, '0')}-${String(agora.getDate()).padStart(2, '0')}`;
+                const tempoAtualMinutos = agora.getHours() * 60 + agora.getMinutes();
+
+                if (dataEscolhida < hojeStr) {
+                    alert("Você não pode selecionar uma data que já passou!");
+                    this.value = "";
+                    return;
+                }
+
+                // 1. APLICA A REGRA DO SÁBADO E DE HORÁRIOS PASSADOS HOJE
+                Array.from(selectHorarioLogado.options).forEach(opcao => {
+                    if (opcao.value !== "") {
+                        opcao.disabled = false;
+                        opcao.text = opcao.value; 
+                        
+                        // Bloqueia a tarde do sábado se for a regra
+                        if (sabadoMeioPeriodo) {
+                            const partes = opcao.value.split(":");
+                            const minHorario = parseInt(partes[0]) * 60 + parseInt(partes[1]);
+                            if (minHorario > 780) { // 780 minutos = 13:00
+                                opcao.disabled = true;
+                                opcao.text = opcao.value + " (Indisponível)";
+                            }
+                        }
+
+                        // Bloqueia horários que já passaram no dia de hoje
+                        if (dataEscolhida === hojeStr && !opcao.disabled) {
+                            const partes = opcao.value.split(":");
+                            const horarioMinutos = parseInt(partes[0]) * 60 + parseInt(partes[1]);
+                            if (horarioMinutos <= tempoAtualMinutos) {
+                                opcao.disabled = true;
+                                opcao.text = opcao.value + " (Indisponível)";
+                            }
+                        }
+                    }
+                });
+
+                // 2. APLICA A REGRA DOS HORÁRIOS JÁ AGENDADOS POR OUTROS
+                fetch('/horarios-ocupados?data=' + dataEscolhida + '&t=' + new Date().getTime())
+                .then(resposta => resposta.json())
+                .then(ocupados => {
+                    Array.from(selectHorarioLogado.options).forEach(opcao => {
+                        if (ocupados.includes(opcao.value)) {
+                            opcao.disabled = true;
+                            opcao.text = opcao.value + " (Indisponível)";
+                        }
+                    });
+                });
+            });
+        });
+    }
+    // Envio do agendamento logado
+    if (btnConfirmarLogado) {
+        btnConfirmarLogado.addEventListener("click", function(e) {
+            e.preventDefault();
+            
+            const nome = document.getElementById("nome-logado").value;
+            const telefone = document.getElementById("telefone-logado").value;
+            const dataAg = inputDataLogado.value;
+            const horario = selectHorarioLogado.value;
+            
+            // Pega o ID do usuário para vincular à conta
+            const campoId = document.getElementById("usuario-id");
+            const usuarioId = campoId ? campoId.value : null;
+
+            if (!dataAg || !horario) {
+                alert("Por favor, selecione a data e o horário!");
+                return;
+            }
+
+            const dados = {
+                cliente_nome: nome,
+                cliente_telefone: telefone,
+                data_agendamento: dataAg,
+                horario: horario,
+                status: "Agendado",
+                usuario_id: usuarioId
+            };
+
+            const textoOriginal = btnConfirmarLogado.innerText;
+            btnConfirmarLogado.innerText = "Confirmando...";
+            btnConfirmarLogado.disabled = true;
+
+            fetch('/agendar', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(dados)
+            })
+            .then(resposta => resposta.json())
+            .then(retorno => {
+                if (retorno.status === "sucesso") {
+                    alert("Agendamento realizado com sucesso!");
+                    modalAgendarLogado.classList.add("escondido");
+                    window.location.reload(); // Recarrega a página para exibir o horário na tabela!
+                } else {
+                    alert("Erro: " + retorno.mensagem);
+                    btnConfirmarLogado.innerText = textoOriginal;
+                    btnConfirmarLogado.disabled = false;
+                }
+            })
+            .catch(() => {
+                alert("Erro de comunicação com o servidor.");
+                btnConfirmarLogado.innerText = textoOriginal;
+                btnConfirmarLogado.disabled = false;
+            });
+        });
+    }
 
 });
