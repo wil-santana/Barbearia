@@ -168,7 +168,7 @@ document.addEventListener("DOMContentLoaded", function() {
             .then(resposta => resposta.json())
             .then(retorno => {
                 if (retorno.status === "sucesso") {
-                    alert("Seu horário das " + horario + " foi marcado com sucesso!");
+                    alert("Seu horário das " + horario + " foi agendado com sucesso!");
                     modalVisitante.classList.add("escondido");
                     
                     document.getElementById("nome").value = "";

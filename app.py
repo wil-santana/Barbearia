@@ -287,7 +287,7 @@ def perfil():
     if not usuario_atual:
         return "Usuário não encontrado", 404
         
-    agendamentos_usuario = [a for a in banco["agendamentos"] if a.get('usuario_id') == usuario_id]
+    agendamentos_usuario = [a for a in banco["agendamentos"] if str(a.get('usuario_id')) == str(usuario_id)]
     return render_template('perfil.html', usuario=usuario_atual, nome=usuario_atual.get('nome'), agendamentos=agendamentos_usuario)
 
 @app.route('/atualizar-perfil', methods=['POST'])
