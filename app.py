@@ -14,12 +14,6 @@ app.secret_key = 'chave_secreta_barbearia'
 app.permanent_session_lifetime = timedelta(days=7)
 
 # ==========================================
-# CREDENCIAIS DO ADMINISTRADOR
-# ==========================================
-ADMIN_EMAIL = "admin@barbearia.com"
-ADMIN_SENHA = "admin123" # Altere aqui para a senha desejada do painel
-
-# ==========================================
 # CONFIGURAÇÃO DO JSONBIN (BANCO DE DADOS NA NUVEM)
 # ==========================================
 BIN_ID = os.getenv("BIN_ID", "").strip()
@@ -101,12 +95,6 @@ def fazer_login():
     acesso = dados_req.get('acesso')
     senha = dados_req.get('senha')
     
-    # 1. VERIFICA SE É O ADMINISTRADOR TENTANDO LOGAR
-    if acesso == ADMIN_EMAIL and senha == ADMIN_SENHA:
-        session.permanent = True
-        session['admin_logado'] = True
-        return jsonify({"status": "sucesso", "redirect": "/admin"})
-
     agora = time.time()
     banco = obter_dados_nuvem()
     bloqueios = banco["bloqueios"]
@@ -151,7 +139,7 @@ def fazer_login():
         session['usuario_id'] = usuario_logado['id']
         session['usuario_nome'] = usuario_logado['nome']
         
-        return jsonify({"status": "sucesso", "redirect": "/perfil"})
+        return jsonify({"status": "sucesso"})
 
 @app.route('/salvar-cadastro', methods=['POST'])
 def salvar_cadastro():
@@ -167,11 +155,6 @@ def salvar_cadastro():
 @app.route('/logout')
 def logout():
     session.clear()
-    return redirect(url_for('home'))
-
-@app.route('/logout-admin')
-def logout_admin():
-    session.pop('admin_logado', None)
     return redirect(url_for('home'))
 
 # ==========================================
@@ -351,6 +334,7 @@ def solicitar_recuperacao():
         
     salvar_dados_nuvem(banco)
             
+    # Ao colocar no Render, o link base será a URL pública (ajustar no futuro caso necessário)
     link_redefinicao = f"http://127.0.0.1:5000/redefinir-senha?token={token}"
     return jsonify({"status": "sucesso", "canal": canal, "link": link_redefinicao, "acesso": acesso})
 
@@ -399,15 +383,11 @@ def salvar_nova_senha():
     return jsonify({"status": "sucesso", "mensagem": "Senha alterada com sucesso!"})
 
 # ==========================================
-# PAINEL ADMIN (PROTEGIDO)
+# PAINEL ADMIN (CONTROLE DE AGENDA E CLIENTES)
 # ==========================================
 
 @app.route('/admin')
 def admin():
-    # 🔒 BLOQUEIA O ACESSO SE NÃO ESTIVER LOGADO COMO ADMIN
-    if not session.get('admin_logado'):
-        return redirect(url_for('home'))
-
     hoje = date.today()
     hoje_str = hoje.strftime('%Y-%m-%d')
     agora_str = datetime.now().strftime('%H:%M')
@@ -456,9 +436,6 @@ def admin():
 
 @app.route('/admin/cliente/<int:usuario_id>')
 def admin_ver_cliente(usuario_id):
-    if not session.get('admin_logado'):
-        return redirect(url_for('home'))
-
     banco = obter_dados_nuvem()
     usuario_encontrado = next((u for u in banco["usuarios"] if u.get('id') == usuario_id), None)
                     
@@ -474,9 +451,6 @@ def get_config_agenda():
 
 @app.route('/admin/salvar-dias-fixos', methods=['POST'])
 def salvar_dias_fixos():
-    if not session.get('admin_logado'):
-        return jsonify({"status": "erro", "mensagem": "Não autorizado"}), 401
-
     dados_req = request.get_json()
     banco = obter_dados_nuvem()
     
@@ -488,9 +462,6 @@ def salvar_dias_fixos():
 
 @app.route('/admin/add-excecao', methods=['POST'])
 def add_excecao():
-    if not session.get('admin_logado'):
-        return jsonify({"status": "erro", "mensagem": "Não autorizado"}), 401
-
     dados_req = request.get_json()
     data = dados_req.get("data")
     tipo = dados_req.get("tipo")
@@ -504,9 +475,6 @@ def add_excecao():
 
 @app.route('/admin/remover-excecao', methods=['POST'])
 def remover_excecao():
-    if not session.get('admin_logado'):
-        return jsonify({"status": "erro", "mensagem": "Não autorizado"}), 401
-
     dados_req = request.get_json()
     data = dados_req.get("data")
     
@@ -519,9 +487,6 @@ def remover_excecao():
 
 @app.route('/admin/excluir-agendamento', methods=['POST'])
 def admin_excluir_agendamento():
-    if not session.get('admin_logado'):
-        return jsonify({"status": "erro", "mensagem": "Não autorizado"}), 401
-
     dados = request.get_json()
     agendamento_id = dados.get('id')
 
