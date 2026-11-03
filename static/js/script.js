@@ -244,7 +244,8 @@ document.addEventListener("DOMContentLoaded", function() {
                     btnEntrar.innerText = textoOriginal;
                     btnEntrar.disabled = false;
                 } else {
-                    window.location.href = "/perfil"; 
+                    // Aqui está a inteligência: se o Python disser que é admin, ele vai pro painel, se não, vai pro perfil.
+                    window.location.href = dados.redirect ? dados.redirect : "/perfil"; 
                 }
             })
             .catch(erro => {

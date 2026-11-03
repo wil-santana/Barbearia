@@ -4,6 +4,7 @@ import uuid
 import requests
 from datetime import timedelta, datetime, date
 from flask import Flask, render_template, request, jsonify, session, redirect, url_for
+from functools import wraps
 from dotenv import load_dotenv
 
 # Carrega as variáveis do arquivo .env
@@ -14,15 +15,30 @@ app.secret_key = 'chave_secreta_barbearia'
 app.permanent_session_lifetime = timedelta(days=7)
 
 # ==========================================
+# CREDENCIAIS DO ADMINISTRADOR
+# ==========================================
+ADMIN_EMAIL = "admin@barbearia.com"
+ADMIN_SENHA = "admin123"
+
+# ==========================================
+# DECORADOR DE SEGURANÇA (BLOQUEIO DO /ADMIN)
+# ==========================================
+def admin_obrigatorio(f):
+    @wraps(f)
+    def decorador(*args, **kwargs):
+        # Se a sessão do admin não existir, barra o acesso na hora e manda para a home
+        if not session.get('admin_logado'):
+            return redirect(url_for('home'))
+        return f(*args, **kwargs)
+    return decorador
+
+# ==========================================
 # CONFIGURAÇÃO DO JSONBIN (BANCO DE DADOS NA NUVEM)
 # ==========================================
 BIN_ID = os.getenv("BIN_ID", "").strip()
 API_KEY = os.getenv("API_KEY", "").strip()
 
 URL_JSONBIN = f"https://api.jsonbin.io/v3/b/{BIN_ID}" if BIN_ID else ""
-
-print(f"DEBUG BIN_ID: {BIN_ID}")
-print(f"DEBUG API_KEY: {API_KEY}")
 
 HEADERS = {
     "Content-Type": "application/json",
@@ -62,17 +78,15 @@ def obter_dados_nuvem():
 
 def salvar_dados_nuvem(dados):
     if BIN_ID and API_KEY:
-        print("A tentar enviar dados para o JSONBin...")
         resposta = requests.put(URL_JSONBIN, json=dados, headers=HEADERS)
         if resposta.status_code == 200:
-            print("✅ SUCESSO! Dados gravados na nuvem.")
+            pass
         else:
-            print(f"❌ ERRO AO GRAVAR NO JSONBIN (Código {resposta.status_code}): {resposta.text}")
+            print(f"❌ ERRO AO GRAVAR NO JSONBIN: {resposta.text}")
 
 # ==========================================
 # ROTAS PÚBLICAS E AUTENTICAÇÃO
 # ==========================================
-
 @app.route('/')
 def home():
     return render_template('index.html')
@@ -95,6 +109,13 @@ def fazer_login():
     acesso = dados_req.get('acesso')
     senha = dados_req.get('senha')
     
+    # 1. VERIFICA SE É O ADMIN TENTANDO ENTRAR
+    if acesso == ADMIN_EMAIL and senha == ADMIN_SENHA:
+        session.permanent = True
+        session['admin_logado'] = True
+        # Envia a ordem para o JavaScript abrir o painel admin
+        return jsonify({"status": "sucesso", "redirect": "/admin"})
+
     agora = time.time()
     banco = obter_dados_nuvem()
     bloqueios = banco["bloqueios"]
@@ -139,17 +160,15 @@ def fazer_login():
         session['usuario_id'] = usuario_logado['id']
         session['usuario_nome'] = usuario_logado['nome']
         
-        return jsonify({"status": "sucesso"})
+        return jsonify({"status": "sucesso", "redirect": "/perfil"})
 
 @app.route('/salvar-cadastro', methods=['POST'])
 def salvar_cadastro():
     novo_usuario = request.get_json()
     banco = obter_dados_nuvem()
-    
     novo_usuario['id'] = len(banco["usuarios"]) + 1
     banco["usuarios"].append(novo_usuario)
     salvar_dados_nuvem(banco)
-        
     return jsonify({"status": "sucesso"})
 
 @app.route('/logout')
@@ -157,10 +176,14 @@ def logout():
     session.clear()
     return redirect(url_for('home'))
 
+@app.route('/logout-admin')
+def logout_admin():
+    session.pop('admin_logado', None)
+    return redirect(url_for('home'))
+
 # ==========================================
 # ROTAS DE AGENDAMENTO
 # ==========================================
-
 @app.route('/agendar', methods=['POST'])
 def agendar():
     try:
@@ -206,7 +229,6 @@ def agendar():
 
         banco["agendamentos"].append(dados_cliente)
         salvar_dados_nuvem(banco)
-
         return jsonify({"status": "sucesso"})
     except Exception as e:
         return jsonify({"status": "erro", "mensagem": str(e)}), 500
@@ -215,7 +237,6 @@ def agendar():
 def horarios_ocupados():
     data_escolhida = request.args.get('data')
     ocupados = []
-    
     if not data_escolhida:
         return jsonify(ocupados)
         
@@ -230,7 +251,6 @@ def horarios_ocupados():
 def cancelar_agendamento():
     dados = request.get_json()
     agendamento_id = dados.get('id')
-
     if not agendamento_id:
         return jsonify({"status": "erro", "mensagem": "ID do agendamento não informado"}), 400
 
@@ -246,7 +266,6 @@ def cancelar_agendamento():
     if encontrou:
         salvar_dados_nuvem(banco)
         return jsonify({"status": "sucesso"})
-
     return jsonify({"status": "erro", "mensagem": "Agendamento não encontrado"}), 404
 
 @app.route('/agendar-logado')
@@ -256,7 +275,6 @@ def agendar_logado():
 # ==========================================
 # PERFIL E RECUPERAÇÃO DE SENHA
 # ==========================================
-
 @app.route('/perfil')
 def perfil():
     usuario_id = session.get('usuario_id')
@@ -270,7 +288,6 @@ def perfil():
         return "Usuário não encontrado", 404
         
     agendamentos_usuario = [a for a in banco["agendamentos"] if a.get('usuario_id') == usuario_id]
-                
     return render_template('perfil.html', usuario=usuario_atual, nome=usuario_atual.get('nome'), agendamentos=agendamentos_usuario)
 
 @app.route('/atualizar-perfil', methods=['POST'])
@@ -333,8 +350,6 @@ def solicitar_recuperacao():
         return jsonify({"status": "erro", "mensagem": "E-mail ou celular não encontrado no sistema."}), 404
         
     salvar_dados_nuvem(banco)
-            
-    # Ao colocar no Render, o link base será a URL pública (ajustar no futuro caso necessário)
     link_redefinicao = f"http://127.0.0.1:5000/redefinir-senha?token={token}"
     return jsonify({"status": "sucesso", "canal": canal, "link": link_redefinicao, "acesso": acesso})
 
@@ -369,7 +384,6 @@ def salvar_nova_senha():
         if u.get('token_recuperacao') == token:
             if time.time() > u.get('token_expiracao', 0):
                 return jsonify({"status": "erro", "mensagem": "Token expirado."}), 400
-            
             u['senha'] = nova_senha
             u.pop('token_recuperacao', None)
             u.pop('token_expiracao', None)
@@ -383,10 +397,10 @@ def salvar_nova_senha():
     return jsonify({"status": "sucesso", "mensagem": "Senha alterada com sucesso!"})
 
 # ==========================================
-# PAINEL ADMIN (CONTROLE DE AGENDA E CLIENTES)
+# PAINEL ADMIN (100% PROTEGIDO)
 # ==========================================
-
 @app.route('/admin')
+@admin_obrigatorio  # <-- Bloqueio ativado aqui
 def admin():
     hoje = date.today()
     hoje_str = hoje.strftime('%Y-%m-%d')
@@ -419,83 +433,69 @@ def admin():
         if data_inicio_str <= a.get('data_agendamento', '') <= data_fim_str
     ]
     
-    agendamentos_filtrados = sorted(
-        agendamentos_filtrados, 
-        key=lambda x: (x.get('data_agendamento', ''), x.get('horario', ''))
-    )
+    agendamentos_filtrados = sorted(agendamentos_filtrados, key=lambda x: (x.get('data_agendamento', ''), x.get('horario', '')))
     
-    return render_template(
-        'admin.html', 
-        agendamentos=agendamentos_filtrados, 
-        hoje=hoje_str, 
-        agora=agora_str,
-        data_inicio=data_inicio_str,
-        data_fim=data_fim_str,
-        aviso_filtro=mensagem_aviso
-    )
+    return render_template('admin.html', agendamentos=agendamentos_filtrados, hoje=hoje_str, agora=agora_str, data_inicio=data_inicio_str, data_fim=data_fim_str, aviso_filtro=mensagem_aviso)
 
 @app.route('/admin/cliente/<int:usuario_id>')
+@admin_obrigatorio  # <-- Bloqueio ativado aqui
 def admin_ver_cliente(usuario_id):
     banco = obter_dados_nuvem()
     usuario_encontrado = next((u for u in banco["usuarios"] if u.get('id') == usuario_id), None)
-                    
     if not usuario_encontrado:
         return "Cliente não encontrado", 404
-        
     return render_template('admin_cliente.html', cliente=usuario_encontrado)
 
+# ESTA ROTA FICA SEM PROTEÇÃO PARA O CALENDÁRIO DOS VISITANTES FUNCIONAR
 @app.route('/admin/config-agenda', methods=['GET'])
 def get_config_agenda():
     banco = obter_dados_nuvem()
     return jsonify(banco["config_agenda"])
 
 @app.route('/admin/salvar-dias-fixos', methods=['POST'])
+@admin_obrigatorio  # <-- Bloqueio ativado aqui
 def salvar_dias_fixos():
     dados_req = request.get_json()
     banco = obter_dados_nuvem()
-    
     banco["config_agenda"]["dias_fechados"] = dados_req.get("dias_fechados", [])
     banco["config_agenda"]["regra_sabado"] = dados_req.get("regra_sabado", "dia_todo")
-    
     salvar_dados_nuvem(banco)
     return jsonify({"status": "sucesso"})
 
 @app.route('/admin/add-excecao', methods=['POST'])
+@admin_obrigatorio  # <-- Bloqueio ativado aqui
 def add_excecao():
     dados_req = request.get_json()
     data = dados_req.get("data")
     tipo = dados_req.get("tipo")
     if not data:
         return jsonify({"status": "erro", "mensagem": "Data não informada"}), 400
-        
     banco = obter_dados_nuvem()
     banco["config_agenda"]["excecoes"][data] = tipo
     salvar_dados_nuvem(banco)
     return jsonify({"status": "sucesso"})
 
 @app.route('/admin/remover-excecao', methods=['POST'])
+@admin_obrigatorio  # <-- Bloqueio ativado aqui
 def remover_excecao():
     dados_req = request.get_json()
     data = dados_req.get("data")
-    
     banco = obter_dados_nuvem()
     if data in banco["config_agenda"]["excecoes"]:
         del banco["config_agenda"]["excecoes"][data]
         salvar_dados_nuvem(banco)
-        
     return jsonify({"status": "sucesso"})
 
 @app.route('/admin/excluir-agendamento', methods=['POST'])
+@admin_obrigatorio  # <-- Bloqueio ativado aqui
 def admin_excluir_agendamento():
     dados = request.get_json()
     agendamento_id = dados.get('id')
-
     if not agendamento_id:
         return jsonify({"status": "erro", "mensagem": "ID do agendamento não informado."}), 400
 
     hoje_str = date.today().strftime('%Y-%m-%d')
     agora_str = datetime.now().strftime('%H:%M')
-
     banco = obter_dados_nuvem()
     historico = banco["agendamentos"]
 
@@ -513,20 +513,15 @@ def admin_excluir_agendamento():
     data_reserva = reserva_alvo.get('data_agendamento', '')
     horario_reserva = reserva_alvo.get('horario', '')
     status_reserva = reserva_alvo.get('status', '')
-
     is_passado = (data_reserva < hoje_str) or (data_reserva == hoje_str and horario_reserva < agora_str)
     is_cancelado = (status_reserva == 'Cancelado')
 
     if not (is_cancelado or is_passado):
-        return jsonify({
-            "status": "erro",
-            "mensagem": "Este agendamento ainda está ativo! Cancele o agendamento antes de excluí-lo."
-        }), 400
+        return jsonify({"status": "erro", "mensagem": "Este agendamento ainda está ativo! Cancele o agendamento antes de excluí-lo."}), 400
 
     historico.pop(index_alvo)
     banco["agendamentos"] = historico
     salvar_dados_nuvem(banco)
-
     return jsonify({"status": "sucesso"})
 
 if __name__ == '__main__':
