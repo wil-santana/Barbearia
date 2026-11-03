@@ -1,6 +1,17 @@
 document.addEventListener("DOMContentLoaded", function() {
 
     // ==========================================
+    // FUNÇÕES AUXILIARES
+    // ==========================================
+    function obterHojeFormatado() {
+        const hoje = new Date();
+        const ano = hoje.getFullYear();
+        const mes = String(hoje.getMonth() + 1).padStart(2, '0');
+        const dia = String(hoje.getDate()).padStart(2, '0');
+        return `${ano}-${mes}-${dia}`;
+    }
+
+    // ==========================================
     // 1. CANCELAMENTO DE AGENDAMENTOS (TABELA)
     // ==========================================
     const botoesCancelar = document.querySelectorAll(".btn-cancelar-admin");
@@ -15,7 +26,10 @@ document.addEventListener("DOMContentLoaded", function() {
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ id: agendamentoId })
                 })
-                .then(resposta => resposta.json())
+                .then(resposta => {
+                    if (!resposta.ok) throw new Error(`Erro HTTP: ${resposta.status}`);
+                    return resposta.json();
+                })
                 .then(dados => {
                     if (dados.status === "sucesso") {
                         alert("Agendamento cancelado com sucesso!");
@@ -24,53 +38,96 @@ document.addEventListener("DOMContentLoaded", function() {
                         alert("Erro ao cancelar: " + dados.mensagem);
                     }
                 })
-                .catch(erro => alert("Erro ao se comunicar com o servidor."));
+                .catch(erro => alert("Erro ao comunicar com o servidor: " + erro.message));
             }
         });
     });
 
     // ==========================================
-    // 2. GERENCIAMENTO DE DIAS E EXCEÇÕES
+    // 1.1 EXCLUSÃO DE AGENDAMENTOS (TABELA)
+    // ==========================================
+    const botoesExcluir = document.querySelectorAll(".btn-excluir-admin");
+
+    botoesExcluir.forEach(botao => {
+        botao.addEventListener("click", function() {
+            const agendamentoId = this.getAttribute("data-id");
+            const isAvisoAtivo = this.classList.contains("btn-aviso-ativo");
+
+            if (isAvisoAtivo) {
+                alert("⚠️ Este agendamento ainda está ativo!\n\nPara manter o controlo dos horários disponíveis, cancele o agendamento primeiro antes de excluí-lo.");
+                return;
+            }
+
+            if (confirm("Deseja realmente excluir este agendamento do histórico permanentemente?")) {
+                fetch('/admin/excluir-agendamento', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ id: agendamentoId })
+                })
+                .then(resposta => {
+                    if (!resposta.ok) throw new Error(`Erro HTTP: ${resposta.status}`);
+                    return resposta.json();
+                })
+                .then(dados => {
+                    if (dados.status === "sucesso") {
+                        alert("Agendamento excluído com sucesso!");
+                        window.location.reload();
+                    } else {
+                        alert("Erro ao excluir: " + dados.mensagem);
+                    }
+                })
+                .catch(erro => alert("Erro ao comunicar com o servidor: " + erro.message));
+            }
+        });
+    });
+
+    // ==========================================
+    // 2. GESTÃO DE DIAS E EXCEÇÕES
     // ==========================================
     const listaExcecoes = document.getElementById('lista-excecoes');
     const btnSalvarFixos = document.getElementById('btn-salvar-fixos');
     const btnAddExcecao = document.getElementById('btn-add-excecao');
-    const checkSabado = document.getElementById('check-sabado');
-    const selectSabado = document.getElementById('opcao-sabado');
+    const checkSabadoFechado = document.getElementById('check-sabado-fechado');
+    const checkSabadoMeio = document.getElementById('check-sabado-meio');
 
-    // Carrega as configurações do Python ao abrir a página
+    if (checkSabadoFechado && checkSabadoMeio) {
+        checkSabadoFechado.addEventListener('change', function() {
+            if (this.checked) checkSabadoMeio.checked = false;
+        });
+        checkSabadoMeio.addEventListener('change', function() {
+            if (this.checked) checkSabadoFechado.checked = false;
+        });
+    }
+
     function carregarConfiguracoes() {
-        fetch('/admin/config-agenda')
-            .then(res => res.json())
+        fetch('/admin/config-agenda?t=' + new Date().getTime())
+            .then(res => {
+                if (!res.ok) throw new Error(`Erro HTTP: ${res.status}`);
+                return res.json();
+            })
             .then(dados => {
-                // TRAVA DE SEGURANÇA: Se 'dias_fechados' não existir no JSON, cria uma lista vazia
-                const diasFechadosSalvos = dados.dias_fechados || []; 
+                const diasFechadosSalvos = (dados.dias_fechados || []).map(num => parseInt(num)); 
                 
-                // Marca os checkboxes corretamente (compara números e converte textos para garantir)
-                const checkboxesDias = document.querySelectorAll('.check-dia');
-                checkboxesDias.forEach(chk => {
-                    chk.checked = diasFechadosSalvos.some(dia => parseInt(dia) === parseInt(chk.value));
+                document.querySelectorAll('.check-dia').forEach(chk => {
+                    chk.checked = diasFechadosSalvos.includes(parseInt(chk.value));
                 });
-                if (checkSabado && selectSabado) {
-                    // Restaura a configuração salva
+
+                if (checkSabadoFechado && checkSabadoMeio) {
+                    checkSabadoFechado.checked = false;
+                    checkSabadoMeio.checked = false;
+
                     if (diasFechadosSalvos.includes(6)) {
-                        selectSabado.classList.remove('escondido');
-                        selectSabado.value = dados.regra_sabado || 'dia_todo';
-                    }
-                    
-                    // Mostra/esconde o select ao clicar no checkbox do sábado
-                    checkSabado.addEventListener('change', function() {
-                        if (this.checked) {
-                            selectSabado.classList.remove('escondido');
+                        if (dados.regra_sabado === 'meio_periodo') {
+                            checkSabadoMeio.checked = true;
                         } else {
-                            selectSabado.classList.add('escondido');
+                            checkSabadoFechado.checked = true;
                         }
-                    });
+                    }
                 }
-                // Renderiza a lista de regras/exceções
+
                 if (listaExcecoes) {
                     listaExcecoes.innerHTML = '';
-                    const excecoesSalvas = dados.excecoes || {}; // Trava de segurança para exceções
+                    const excecoesSalvas = dados.excecoes || {}; 
                     
                     for (const [data, tipo] of Object.entries(excecoesSalvas)) {
                         const li = document.createElement('li');
@@ -90,26 +147,34 @@ document.addEventListener("DOMContentLoaded", function() {
             .catch(erro => console.error("Erro ao carregar configurações de agenda.", erro));
     }
 
-    // Salvar dias da semana fixos
     if (btnSalvarFixos) {
         btnSalvarFixos.addEventListener('click', () => {
             const diasFechados = [];
-            // Pega TODOS os checkboxes marcados na tela
             document.querySelectorAll('.check-dia:checked').forEach(chk => {
-                diasFechados.push(parseInt(chk.value));
+                const val = parseInt(chk.value);
+                if (!isNaN(val) && !diasFechados.includes(val)) {
+                    diasFechados.push(val);
+                }
             });
 
-            const textoOriginal = btnSalvarFixos.innerText;
-            btnSalvarFixos.innerText = "Salvando...";
-            btnSalvarFixos.disabled = true;
+            let regraSabado = "dia_todo";
+            if (checkSabadoFechado && checkSabadoFechado.checked) {
+                if (!diasFechados.includes(6)) diasFechados.push(6);
+                regraSabado = "dia_todo";
+            } else if (checkSabadoMeio && checkSabadoMeio.checked) {
+                if (!diasFechados.includes(6)) diasFechados.push(6);
+                regraSabado = "meio_periodo";
+            } else {
+                regraSabado = "normal";
+            }
 
-            // Pega o valor do select do sábado
-            const regraSabado = document.getElementById('opcao-sabado') ? document.getElementById('opcao-sabado').value : 'dia_todo';
+            const textoOriginal = btnSalvarFixos.innerText;
+            btnSalvarFixos.innerText = "A guardar...";
+            btnSalvarFixos.disabled = true;
 
             fetch('/admin/salvar-dias-fixos', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                // Envia a lista e a regra juntas
                 body: JSON.stringify({ dias_fechados: diasFechados, regra_sabado: regraSabado }) 
             })
             .then(res => res.json())
@@ -117,20 +182,19 @@ document.addEventListener("DOMContentLoaded", function() {
                 if(dados.status === "sucesso") {
                     alert("Dias fixos atualizados com sucesso!");
                 } else {
-                    alert("Erro ao salvar: " + dados.mensagem);
+                    alert("Erro ao guardar: " + dados.mensagem);
                 }
                 btnSalvarFixos.innerText = textoOriginal;
                 btnSalvarFixos.disabled = false;
             })
             .catch(() => {
-                alert("Erro de conexão ao tentar salvar os dias fixos.");
+                alert("Erro de ligação ao tentar guardar os dias fixos.");
                 btnSalvarFixos.innerText = textoOriginal;
                 btnSalvarFixos.disabled = false;
             });
         });
     }
 
-    // Adicionar regra/exceção específica
     if (btnAddExcecao) {
         btnAddExcecao.addEventListener('click', () => {
             const dataInput = document.getElementById('data-excecao').value;
@@ -142,7 +206,7 @@ document.addEventListener("DOMContentLoaded", function() {
             }
 
             const textoOriginal = btnAddExcecao.innerText;
-            btnAddExcecao.innerText = "Adicionando...";
+            btnAddExcecao.innerText = "A adicionar...";
             btnAddExcecao.disabled = true;
 
             fetch('/admin/add-excecao', {
@@ -155,7 +219,7 @@ document.addEventListener("DOMContentLoaded", function() {
                 if (dados.status === "sucesso") {
                     document.getElementById('data-excecao').value = '';
                     carregarConfiguracoes(); 
-                    alert("Nova regra salva com sucesso!");
+                    alert("Nova regra guardada com sucesso!");
                 } else {
                     alert("Erro: " + dados.mensagem);
                 }
@@ -163,14 +227,13 @@ document.addEventListener("DOMContentLoaded", function() {
                 btnAddExcecao.disabled = false;
             })
             .catch(() => {
-                alert("Erro de conexão ao adicionar a regra.");
+                alert("Erro de ligação ao adicionar a regra.");
                 btnAddExcecao.innerText = textoOriginal;
                 btnAddExcecao.disabled = false;
             });
         });
     }
 
-    // Remover regra
     if (listaExcecoes) {
         listaExcecoes.addEventListener('click', function(e) {
             if (e.target && e.target.classList.contains('btn-remover')) {
@@ -194,9 +257,47 @@ document.addEventListener("DOMContentLoaded", function() {
         });
     }
 
-    // Inicializa a tela garantindo que só rode se estiver na página de admin
+    // ==========================================
+    // 3. FILTRO DE AGENDAMENTOS POR PERÍODO (VIA BACKEND)
+    // ==========================================
+    const inputInicio = document.getElementById("filtro-inicio");
+    const inputFim = document.getElementById("filtro-fim");
+    const btnBuscar = document.getElementById("btn-buscar-periodo");
+
+    if (btnBuscar && inputInicio && inputFim) {
+        btnBuscar.addEventListener("click", function() {
+            const inicio = inputInicio.value;
+            const fim = inputFim.value;
+
+            if (!inicio || !fim) {
+                alert("Por favor, selecione as datas de início e fim.");
+                return;
+            }
+
+            const dInicio = new Date(inicio + "T00:00:00");
+            const dFim = new Date(fim + "T00:00:00");
+            
+            const diffTime = dFim - dInicio;
+            const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
+            if (diffDays < 0) {
+                alert("A data final não pode ser anterior à data inicial.");
+                return;
+            }
+
+            if (diffDays > 5) {
+                alert("Atenção: A busca máxima permitida é de 5 dias.\n\nPor favor, diminua o período escolhido.");
+                return;
+            }
+
+            btnBuscar.innerText = "A procurar...";
+            window.location.href = `/admin?inicio=${inicio}&fim=${fim}`;
+        });
+    }
+
+    // Carrega configurações ao abrir o painel
     if (document.querySelector('.admin-grid')) {
         carregarConfiguracoes();
     }
 
-});
+}); // <-- A chave e o parêntese corretos estão aqui!

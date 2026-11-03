@@ -41,19 +41,27 @@ document.addEventListener("DOMContentLoaded", function() {
             const dataEscolhida = this.value;
             if (!dataEscolhida) return;
 
-            fetch('/admin/config-agenda')
+            fetch('/admin/config-agenda?t=' + new Date().getTime())
             .then(res => res.json())
             .then(config => {
                 const dataObj = new Date(dataEscolhida + 'T00:00:00'); 
                 const diaSemana = dataObj.getDay(); 
                 let fechado = false;
+                let sabadoMeioPeriodo = false;
+                
+                const diasFechados = (config.dias_fechados || []).map(num => parseInt(num));
                 
                 if (config.excecoes && config.excecoes[dataEscolhida] !== undefined) {
                     if (config.excecoes[dataEscolhida] === 'fechado') fechado = true;
                     if (config.excecoes[dataEscolhida] === 'aberto') fechado = false;
                 } else {
-                    if (config.dias_fechados && config.dias_fechados.includes(diaSemana)) {
-                        fechado = true;
+                    if (diasFechados.includes(diaSemana)) {
+                        if (diaSemana === 6 && config.regra_sabado === 'meio_periodo') {
+                            fechado = false;
+                            sabadoMeioPeriodo = true;
+                        } else {
+                            fechado = true;
+                        }
                     }
                 }
 
@@ -86,6 +94,15 @@ document.addEventListener("DOMContentLoaded", function() {
                     if (opcao.value !== "") {
                         opcao.disabled = false;
                         opcao.text = opcao.value; 
+
+                        if (sabadoMeioPeriodo) {
+                            const partes = opcao.value.split(":");
+                            const minHorario = parseInt(partes[0]) * 60 + parseInt(partes[1]);
+                            if (minHorario > 780) { // 780 min = 13:00
+                                opcao.disabled = true;
+                                opcao.text = opcao.value + " (Indisponível)";
+                            }
+                        }
                     }
                 });
 
@@ -365,7 +382,7 @@ document.addEventListener("DOMContentLoaded", function() {
                     } else {
                         alert("Link de recuperação gerado com sucesso! (Link de teste): " + dados.link);
                     }
-                    window.location.href = "/login";
+                    window.location.href = "/";
                 } else {
                     alert("Erro: " + dados.mensagem);
                 }
@@ -390,7 +407,7 @@ document.addEventListener("DOMContentLoaded", function() {
             .then(dados => {
                 if (dados.status === "sucesso") {
                     alert("Senha alterada com sucesso! Faça login com a nova senha.");
-                    window.location.href = "/login";
+                    window.location.href = "/";
                 } else {
                     alert("Erro: " + dados.mensagem);
                 }

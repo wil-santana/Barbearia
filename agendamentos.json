@@ -3,14 +3,6 @@
         "cliente_nome": "wilson",
         "cliente_telefone": "81999590677",
         "data_agendamento": "2026-08-30",
-        "horario": "08:00",
-        "status": "Conclu\u00eddo",
-        "id": 1
-    },
-    {
-        "cliente_nome": "wilson",
-        "cliente_telefone": "81999590677",
-        "data_agendamento": "2026-08-30",
         "horario": "08:30",
         "status": "Conclu\u00eddo",
         "id": 2
@@ -315,5 +307,46 @@
         "status": "Agendado",
         "usuario_id": "2",
         "id": 37
+    },
+    {
+        "cliente_nome": "wil santana",
+        "cliente_telefone": "81999590677",
+        "data_agendamento": "2026-11-03",
+        "horario": "11:30",
+        "status": "Agendado",
+        "id": 38
+    },
+    {
+        "cliente_nome": "wil santana",
+        "cliente_telefone": "81999590677",
+        "data_agendamento": "2026-11-03",
+        "horario": "11:00",
+        "status": "Agendado",
+        "id": 38
+    },
+    {
+        "cliente_nome": "wil santana",
+        "cliente_telefone": "81999999999",
+        "data_agendamento": "2026-11-04",
+        "horario": "14:00",
+        "status": "Agendado",
+        "id": 39
+    },
+    {
+        "cliente_nome": "joao",
+        "cliente_telefone": "81999999999",
+        "data_agendamento": "2026-11-03",
+        "horario": "19:30",
+        "status": "Agendado",
+        "usuario_id": "2",
+        "id": 40
+    },
+    {
+        "cliente_nome": "wil santana",
+        "cliente_telefone": "81999590677",
+        "data_agendamento": "2026-11-04",
+        "horario": "16:30",
+        "status": "Agendado",
+        "id": 41
     }
 ]
