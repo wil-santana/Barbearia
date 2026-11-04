@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Painel Administrativo - Barbearia</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/admin.css') }}?v=9">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/admin.css') }}?v=10">
 </head>
 <body class="admin-body">
     <div class="admin-wrapper">
@@ -87,6 +87,7 @@
                         <tr>
                             <th>Cliente</th>
                             <th>Data / Hora</th>
+                            <th>Serviços / Valor</th>
                             <th>Status</th>
                             <th>Ações</th>
                         </tr>
@@ -111,6 +112,25 @@
                                     <b>{{ a.horario[:5] }}</b>
                                 </td>
                                 <td>
+                                    {% if a.servicos_realizados %}
+                                        <ul style="margin: 0; padding-left: 15px; font-size: 0.82rem;">
+                                            {% for s in a.servicos_realizados %}
+                                                <li>{{ s.nome }} {% if s.valor %}- R$ {{ "%.2f"|format(s.valor) }}{% endif %}</li>
+                                            {% endfor %}
+                                        </ul>
+                                        {% if a.valor_total %}
+                                            <b style="color: #28a745; font-size: 0.82rem; display: block; margin-top: 3px;">Total: R$ {{ "%.2f"|format(a.valor_total) }}</b>
+                                        {% endif %}
+                                        {% if a.forma_pagamento %}
+                                            <span style="font-size: 0.75rem; color: #94a3b8;">Pgto: {{ a.forma_pagamento }}</span>
+                                        {% endif %}
+                                    {% elif a.servicos %}
+                                        <span style="font-size: 0.85rem; color: #cbd5e1;">{{ a.servicos | join(', ') }}</span>
+                                    {% else %}
+                                        <span style="font-size: 0.82rem; color: #64748b;">Não informado</span>
+                                    {% endif %}
+                                </td>
+                                <td>
                                     {% set st = a.status | lower %}
                                     <span class="badge {{ 'agendado' if 'agendado' in st else ('concluido' if 'concluído' in st or 'concluido' in st else 'cancelado') }}" 
                                           style="background-color: {{ '#28a745' if 'concluído' in st or 'concluido' in st else ('#e67e22' if 'não' in st else '') }};">
@@ -131,11 +151,11 @@
                             </tr>
                             {% endfor %}
                             <tr id="linha-sem-agendamento" style="display: none;">
-                                <td colspan="4" class="vazio">Nenhum agendamento encontrado para esta data.</td>
+                                <td colspan="5" class="vazio">Nenhum agendamento encontrado para esta data.</td>
                             </tr>
                         {% else %}
                             <tr>
-                                <td colspan="4" class="vazio">Nenhum agendamento registrado.</td>
+                                <td colspan="5" class="vazio">Nenhum agendamento registrado.</td>
                             </tr>
                         {% endif %}
                     </tbody>
@@ -220,6 +240,6 @@
         </div>
     </div>
 
-    <script src="{{ url_for('static', filename='js/admin.js') }}?v=9"></script>
+    <script src="{{ url_for('static', filename='js/admin.js') }}?v=10"></script>
 </body>
 </html>

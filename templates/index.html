@@ -9,7 +9,6 @@
 <body class="pagina-escura">
     <main class="container">
         <header class="cabecalho">
-            <!-- Espaço para inserir a imagem da logo no futuro -->
             <div class="logo-placeholder" style="margin-bottom: 20px; display: flex; justify-content: center; transform: scale(1.2);">
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="120" height="120">
                     <circle cx="50" cy="50" r="48" fill="#121212" stroke="#FFFFFF" stroke-width="1"/>
@@ -40,7 +39,7 @@
     <!-- ========================================= -->
     <div id="modal-visitante" class="modal-overlay escondido">
         <div class="modal-conteudo cartao">
-            <button type="button" class="btn-fechar" id="fechar-modal-visitante">&times;</button>
+            <button type="button" class="btn-fechar" id="fechar-modal-visitante">×</button>
             
             <header class="cabecalho" style="margin-bottom: 15px;">
                <h2><span style="display: inline-block; transform: rotate(180deg);">✂️</span> Barbearia</h2>
@@ -61,9 +60,21 @@
                 <label for="telefone">3. WhatsApp:</label>
                 <input type="text" id="telefone" class="campo-data" placeholder="(00) 00000-0000">
             </div>
+
+            <!-- NOVAS CHECKBOXES DE SERVIÇOS -->
+            <div class="grupo-formulario">
+                <label>4. Selecione o(s) Serviço(s) Desejado(s):</label>
+                <div style="display: flex; flex-direction: column; gap: 8px; margin-top: 5px;">
+                    <label style="font-weight: normal; cursor: pointer;"><input type="checkbox" class="chk-servico-cliente" value="Corte"> Corte</label>
+                    <label style="font-weight: normal; cursor: pointer;"><input type="checkbox" class="chk-servico-cliente" value="Barba"> Barba</label>
+                    <label style="font-weight: normal; cursor: pointer;"><input type="checkbox" class="chk-servico-cliente" value="Lavagem"> Lavagem</label>
+                    <label style="font-weight: normal; cursor: pointer;"><input type="checkbox" class="chk-servico-cliente" value="Sobrancelha"> Sobrancelha</label>
+                    <label style="font-weight: normal; cursor: pointer;"><input type="checkbox" class="chk-servico-cliente" id="chk-cliente-outros" value="Outros"> Outros</label>
+                </div>
+            </div>
             
             <div class="grupo-formulario">
-                <label for="horario">4. Escolha o horário:</label>
+                <label for="horario">5. Escolha o horário:</label>
                 <select id="horario" class="campo-data">
                     <option value="" disabled selected>Escolha seu horário...</option>
                     <option value="08:00">08:00</option>
@@ -95,37 +106,29 @@
         </div>
     </div>
 
-    <!-- ========================================= -->
-    <!-- MODAL DE LOGIN                            -->
-    <!-- ========================================= -->
+    <!-- MODAL DE LOGIN -->
     <div id="modal" class="modal-overlay escondido">
         <div class="modal-conteudo cartao marca-dagua-container">
-            <button id="btn-fechar-modal" class="btn-fechar">&times;</button>
-
+            <button id="btn-fechar-modal" class="btn-fechar">×</button>
             <header class="cabecalho">
                 <h2>Bem-vindo de volta!</h2>
                 <p>Acesse sua conta para continuar:</p>
             </header>
-            
             <form id="form-login-modal">
                 <div class="grupo-formulario">
                     <label for="acesso">E-mail ou Celular:</label>
                     <input type="text" id="acesso" class="campo-entrada" placeholder="Digite seu acesso" required>
                 </div>
-                
                 <div class="grupo-formulario">
                     <label for="senha">Senha:</label>
                     <input type="password" id="senha" class="campo-entrada" placeholder="Digite sua senha" required>
                 </div>
-                
                 <div class="grupo-checkbox">
                     <input type="checkbox" id="manter-conectado">
                     <label for="manter-conectado" class="manter">Manter-me conectado</label>
                 </div>
-                
                 <button type="button" id="btn-entrar" class="btn-entrar">Entrar</button>
             </form>
-
             <div class="links-uteis">
                 <a href="/esqueci-senha">Esqueci minha senha</a>
                 <a href="#" id="link-abrir-cadastro">Criar uma conta</a>
@@ -133,49 +136,39 @@
         </div>
     </div>
 
-    <!-- ========================================= -->
-    <!-- MODAL DE CADASTRO                         -->
-    <!-- ========================================= -->
+    <!-- MODAL DE CADASTRO -->
     <div id="modal-cadastro" class="modal-overlay escondido">
         <div class="modal-conteudo cartao">
-            <button type="button" class="btn-fechar" id="fechar-modal-cadastro">&times;</button>
-            
+            <button type="button" class="btn-fechar" id="fechar-modal-cadastro">×</button>
             <header class="cabecalho" style="margin-bottom: 15px;">
                 <h2>📝 Cadastre-se</h2>
                 <p>Crie um perfil em nosso sistema</p>
             </header>
-
             <form id="form-cadastro">
                 <div class="grupo-formulario">
                     <label for="cad-nome">Nome Completo:</label>
                     <input type="text" id="cad-nome" class="campo-entrada" placeholder="Digite seu nome" required>
                 </div>
-                
                 <div class="grupo-formulario">
                     <label for="cad-celular">Celular (WhatsApp):</label>
                     <input type="tel" id="cad-celular" class="campo-entrada" placeholder="(00) 00000-0000" required>
                 </div>
-                
                 <div class="grupo-formulario">
                     <label for="cad-email">E-mail:</label>
                     <input type="email" id="cad-email" class="campo-entrada" placeholder="seu@email.com" required>
                 </div>
-
                 <div class="grupo-formulario">
                     <label for="cad-nascimento">Data de Nascimento:</label>
                     <input type="date" id="cad-nascimento" class="campo-entrada" required>
                 </div>
-                
                 <div class="grupo-formulario">
                     <label for="cad-senha">Senha:</label>
                     <input type="password" id="cad-senha" class="campo-entrada" placeholder="Crie uma senha" required>
                 </div>
-
                 <div class="grupo-formulario">
                     <label for="cad-confirmar-senha">Confirmar Senha:</label>
                     <input type="password" id="cad-confirmar-senha" class="campo-entrada" placeholder="Repita a senha" required>
                 </div>
-                
                 <button type="submit" class="btn-primario" style="width: 100%; margin-top: 10px;">Finalizar Cadastro</button>
             </form>
         </div>

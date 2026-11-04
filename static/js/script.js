@@ -143,8 +143,19 @@ document.addEventListener("DOMContentLoaded", function() {
             const dataAg = inputData.value;
             const horario = selectHorario.value;
 
+            // Recolhe os serviços marcados via checkbox pelo visitante
+            const servicosDesejados = [];
+            document.querySelectorAll(".chk-servico-cliente:checked").forEach(chk => {
+                servicosDesejados.push(chk.value);
+            });
+
             if (!nome || !telefone || !dataAg || !horario) {
                 alert("Por favor, preencha todos os campos e escolha um horário!");
+                return;
+            }
+
+            if (servicosDesejados.length === 0) {
+                alert("Por favor, selecione pelo menos um serviço!");
                 return;
             }
 
@@ -153,7 +164,8 @@ document.addEventListener("DOMContentLoaded", function() {
                 cliente_telefone: telefone,
                 data_agendamento: dataAg,
                 horario: horario,
-                status: "Agendado"
+                status: "Agendado",
+                servicos: servicosDesejados
             };
 
             const textoOriginal = btnAgendar.innerText;
@@ -175,6 +187,7 @@ document.addEventListener("DOMContentLoaded", function() {
                     document.getElementById("telefone").value = "";
                     inputData.value = "";
                     selectHorario.selectedIndex = 0;
+                    document.querySelectorAll(".chk-servico-cliente").forEach(c => c.checked = false);
                 } else {
                     alert("Erro: " + retorno.mensagem);
                 }
@@ -244,11 +257,10 @@ document.addEventListener("DOMContentLoaded", function() {
                     btnEntrar.innerText = textoOriginal;
                     btnEntrar.disabled = false;
                 } else {
-                    // Aqui está a inteligência: se o Python disser que é admin, ele vai pro painel, se não, vai pro perfil.
                     window.location.href = dados.redirect ? dados.redirect : "/perfil"; 
                 }
             })
-            .catch(erro => {
+            .catch(() => {
                 alert("Erro de conexão com o servidor!");
                 btnEntrar.innerText = textoOriginal;
                 btnEntrar.disabled = false;
@@ -334,7 +346,7 @@ document.addEventListener("DOMContentLoaded", function() {
                 btnSubmit.innerText = textoOriginal;
                 btnSubmit.disabled = false;
             })
-            .catch(erro => {
+            .catch(() => {
                 alert("Erro ao cadastrar.");
                 btnSubmit.innerText = textoOriginal;
                 btnSubmit.disabled = false;
@@ -388,7 +400,7 @@ document.addEventListener("DOMContentLoaded", function() {
                     alert("Erro: " + dados.mensagem);
                 }
             })
-            .catch(erro => alert("Erro ao se comunicar com o servidor."));
+            .catch(() => alert("Erro ao se comunicar com o servidor."));
         });
     }
 
@@ -413,7 +425,7 @@ document.addEventListener("DOMContentLoaded", function() {
                     alert("Erro: " + dados.mensagem);
                 }
             })
-            .catch(erro => alert("Erro ao se comunicar com o servidor."));
+            .catch(() => alert("Erro ao se comunicar com o servidor."));
         });
     }
 
@@ -446,7 +458,7 @@ document.addEventListener("DOMContentLoaded", function() {
                     alert("Erro: " + dados.mensagem);
                 }
             })
-            .catch(erro => alert("Erro ao se comunicar com o servidor."));
+            .catch(() => alert("Erro ao se comunicar com o servidor."));
         });
     }
 
@@ -489,7 +501,7 @@ document.addEventListener("DOMContentLoaded", function() {
                         alert("Erro ao cancelar: " + dados.mensagem);
                     }
                 })
-                .catch(erro => alert("Erro ao se comunicar com o servidor."));
+                .catch(() => alert("Erro ao se comunicar com o servidor."));
             }
         });
     });
@@ -526,13 +538,11 @@ document.addEventListener("DOMContentLoaded", function() {
         });
     }
     
-    // Validação de datas e horários bloqueados para cliente logado
     if (inputDataLogado && selectHorarioLogado) {
        inputDataLogado.addEventListener("change", function() {
             const dataEscolhida = this.value;
             if (!dataEscolhida) return;
 
-            // Busca as regras no banco de dados sem usar cache
             fetch('/admin/config-agenda?t=' + new Date().getTime())
             .then(res => res.json())
             .then(config => {
@@ -541,7 +551,6 @@ document.addEventListener("DOMContentLoaded", function() {
                 let fechado = false;
                 let sabadoMeioPeriodo = false;
                 
-                // Força o Javascript a ler a lista de dias como números inteiros
                 const diasFechados = (config.dias_fechados || []).map(num => parseInt(num));
                 
                 if (config.excecoes && config.excecoes[dataEscolhida] !== undefined) {
@@ -549,7 +558,6 @@ document.addEventListener("DOMContentLoaded", function() {
                     if (config.excecoes[dataEscolhida] === 'aberto') fechado = false;
                 } else {
                     if (diasFechados.includes(diaSemana)) {
-                        // Se for Sábado (6) e estiver marcado como meio período
                         if (diaSemana === 6 && config.regra_sabado === 'meio_periodo') {
                             fechado = false; 
                             sabadoMeioPeriodo = true;
@@ -578,13 +586,11 @@ document.addEventListener("DOMContentLoaded", function() {
                     return;
                 }
 
-                // 1. APLICA A REGRA DO SÁBADO E DE HORÁRIOS PASSADOS HOJE
                 Array.from(selectHorarioLogado.options).forEach(opcao => {
                     if (opcao.value !== "") {
                         opcao.disabled = false;
                         opcao.text = opcao.value; 
                         
-                        // Bloqueia a tarde do sábado se for a regra
                         if (sabadoMeioPeriodo) {
                             const partes = opcao.value.split(":");
                             const minHorario = parseInt(partes[0]) * 60 + parseInt(partes[1]);
@@ -594,7 +600,6 @@ document.addEventListener("DOMContentLoaded", function() {
                             }
                         }
 
-                        // Bloqueia horários que já passaram no dia de hoje
                         if (dataEscolhida === hojeStr && !opcao.disabled) {
                             const partes = opcao.value.split(":");
                             const horarioMinutos = parseInt(partes[0]) * 60 + parseInt(partes[1]);
@@ -606,7 +611,6 @@ document.addEventListener("DOMContentLoaded", function() {
                     }
                 });
 
-                // 2. APLICA A REGRA DOS HORÁRIOS JÁ AGENDADOS POR OUTROS
                 fetch('/horarios-ocupados?data=' + dataEscolhida + '&t=' + new Date().getTime())
                 .then(resposta => resposta.json())
                 .then(ocupados => {
@@ -620,6 +624,7 @@ document.addEventListener("DOMContentLoaded", function() {
             });
         });
     }
+
     // Envio do agendamento logado
     if (btnConfirmarLogado) {
         btnConfirmarLogado.addEventListener("click", function(e) {
@@ -630,12 +635,22 @@ document.addEventListener("DOMContentLoaded", function() {
             const dataAg = inputDataLogado.value;
             const horario = selectHorarioLogado.value;
             
-            // Pega o ID do usuário para vincular à conta
             const campoId = document.getElementById("usuario-id");
             const usuarioId = campoId ? campoId.value : null;
 
+            // Recolhe os serviços marcados via checkbox pelo cliente logado
+            const servicosDesejados = [];
+            document.querySelectorAll(".chk-servico-logado:checked").forEach(chk => {
+                servicosDesejados.push(chk.value);
+            });
+
             if (!dataAg || !horario) {
                 alert("Por favor, selecione a data e o horário!");
+                return;
+            }
+
+            if (servicosDesejados.length === 0) {
+                alert("Por favor, selecione pelo menos um serviço!");
                 return;
             }
 
@@ -645,7 +660,8 @@ document.addEventListener("DOMContentLoaded", function() {
                 data_agendamento: dataAg,
                 horario: horario,
                 status: "Agendado",
-                usuario_id: usuarioId
+                usuario_id: usuarioId,
+                servicos: servicosDesejados
             };
 
             const textoOriginal = btnConfirmarLogado.innerText;
@@ -662,7 +678,7 @@ document.addEventListener("DOMContentLoaded", function() {
                 if (retorno.status === "sucesso") {
                     alert("Agendamento realizado com sucesso!");
                     modalAgendarLogado.classList.add("escondido");
-                    window.location.reload(); // Recarrega a página para exibir o horário na tabela!
+                    window.location.reload(); 
                 } else {
                     alert("Erro: " + retorno.mensagem);
                     btnConfirmarLogado.innerText = textoOriginal;

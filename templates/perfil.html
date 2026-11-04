@@ -54,8 +54,8 @@
                 <table class="tabela-agendamentos">
                     <thead>
                         <tr>
-                            <th>Data</th>
-                            <th>Horário</th>
+                            <th>Data / Hora</th>
+                            <th>Serviços / Valor</th>
                             <th>Status</th>
                             <th>Ações</th>
                         </tr>
@@ -63,8 +63,26 @@
                     <tbody>
                         {% for reserva in agendamentos %}
                         <tr>
-                            <td>{{ reserva.data_agendamento }}</td>
-                            <td><strong>{{ reserva.horario }}</strong></td>
+                            <td>
+                                {{ reserva.data_agendamento.split('-') | reverse | join('/') }}
+                                <br><strong>{{ reserva.horario }}</strong>
+                            </td>
+                            <td>
+                                {% if reserva.servicos_realizados %}
+                                    <ul style="margin: 0; padding-left: 15px; font-size: 0.85rem;">
+                                        {% for s in reserva.servicos_realizados %}
+                                            <li>{{ s.nome }} {% if s.valor %}- R$ {{ "%.2f"|format(s.valor) }}{% endif %}</li>
+                                        {% endfor %}
+                                    </ul>
+                                    {% if reserva.valor_total %}
+                                        <b style="color: #28a745; font-size: 0.85rem;">Total: R$ {{ "%.2f"|format(reserva.valor_total) }}</b>
+                                    {% endif %}
+                                {% elif reserva.servicos %}
+                                    <span style="font-size: 0.85rem; color: #ccc;">{{ reserva.servicos | join(', ') }}</span>
+                                {% else %}
+                                    <span style="font-size: 0.85rem; color: #777;">Não especificado</span>
+                                {% endif %}
+                            </td>
                             <td>
                                 {% set st = reserva.status | lower %}
                                 <span class="badge {{ 'agendado' if 'agendado' in st else ('concluido' if 'concluido' in st else 'cancelado') }}">
@@ -100,7 +118,7 @@
     <!-- ========================================= -->
     <div id="modal-agendar" class="modal-overlay escondido">
         <div class="modal-conteudo cartao marca-dagua-container">
-            <button type="button" class="btn-fechar" id="fechar-modal-agendar">&times;</button>
+            <button type="button" class="btn-fechar" id="fechar-modal-agendar">×</button>
             
             <header class="cabecalho" style="margin-bottom: 15px;">
                 <h2>✂️ Agendamento Rápido</h2>
@@ -124,9 +142,21 @@
             
             <!-- ID Invisível do Cliente -->
             <input type="hidden" id="usuario-id" value="{{ usuario.id }}">
+
+            <!-- CHECKBOXES DE SERVIÇOS NO PERFIL -->
+            <div class="grupo-formulario">
+                <label>4. Selecione o(s) Serviço(s):</label>
+                <div style="display: flex; flex-direction: column; gap: 8px; margin-top: 5px;">
+                    <label style="font-weight: normal; cursor: pointer;"><input type="checkbox" class="chk-servico-logado" value="Corte"> Corte</label>
+                    <label style="font-weight: normal; cursor: pointer;"><input type="checkbox" class="chk-servico-logado" value="Barba"> Barba</label>
+                    <label style="font-weight: normal; cursor: pointer;"><input type="checkbox" class="chk-servico-logado" value="Lavagem"> Lavagem</label>
+                    <label style="font-weight: normal; cursor: pointer;"><input type="checkbox" class="chk-servico-logado" value="Sobrancelha"> Sobrancelha</label>
+                    <label style="font-weight: normal; cursor: pointer;"><input type="checkbox" class="chk-servico-logado" id="chk-logado-outros" value="Outros"> Outros</label>
+                </div>
+            </div>
             
             <div class="grupo-formulario">
-                <label for="horario-logado">4. Escolha o horário:</label>
+                <label for="horario-logado">5. Escolha o horário:</label>
                 <select id="horario-logado" class="campo-entrada">
                     <option value="" disabled selected>Escolha seu horário...</option>
                     <option value="08:00">08:00</option>
@@ -158,6 +188,6 @@
         </div>
     </div>
 
-    <script src="{{ url_for('static', filename='js/script.js') }}?v=4"></script>
+    <script src="{{ url_for('static', filename='js/script.js') }}?v=5"></script>
 </body>
 </html>
