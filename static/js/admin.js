@@ -12,39 +12,7 @@ document.addEventListener("DOMContentLoaded", function() {
     }
 
     // ==========================================
-    // 1. CANCELAMENTO DE AGENDAMENTOS (TABELA)
-    // ==========================================
-    const botoesCancelar = document.querySelectorAll(".btn-cancelar-admin");
-    
-    botoesCancelar.forEach(botao => {
-        botao.addEventListener("click", function() {
-            const agendamentoId = this.getAttribute("data-id");
-            
-            if (confirm("Deseja realmente cancelar este agendamento pelo painel administrativo?")) {
-                fetch('/cancelar-agendamento', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ id: agendamentoId })
-                })
-                .then(resposta => {
-                    if (!resposta.ok) throw new Error(`Erro HTTP: ${resposta.status}`);
-                    return resposta.json();
-                })
-                .then(dados => {
-                    if (dados.status === "sucesso") {
-                        alert("Agendamento cancelado com sucesso!");
-                        window.location.reload();
-                    } else {
-                        alert("Erro ao cancelar: " + dados.mensagem);
-                    }
-                })
-                .catch(erro => alert("Erro ao comunicar com o servidor: " + erro.message));
-            }
-        });
-    });
-
-    // ==========================================
-    // 1.1 EXCLUSÃO DE AGENDAMENTOS (TABELA)
+    // 1. EXCLUSÃO DE AGENDAMENTOS (TABELA)
     // ==========================================
     const botoesExcluir = document.querySelectorAll(".btn-excluir-admin");
 
@@ -54,7 +22,7 @@ document.addEventListener("DOMContentLoaded", function() {
             const isAvisoAtivo = this.classList.contains("btn-aviso-ativo");
 
             if (isAvisoAtivo) {
-                alert("⚠️ Este agendamento ainda está ativo!\n\nPara manter o controlo dos horários disponíveis, cancele o agendamento primeiro antes de excluí-lo.");
+                alert("⚠️ Este agendamento ainda está ativo (Agendado)!\n\nUtilize os botões 'Finalizar' ou 'Não Concluído' em vez de excluir. A exclusão serve apenas para limpar o histórico.");
                 return;
             }
 
@@ -258,7 +226,7 @@ document.addEventListener("DOMContentLoaded", function() {
     }
 
     // ==========================================
-    // 3. FILTRO DE AGENDAMENTOS POR PERÍODO (VIA BACKEND)
+    // 3. FILTRO DE AGENDAMENTOS POR PERÍODO
     // ==========================================
     const inputInicio = document.getElementById("filtro-inicio");
     const inputFim = document.getElementById("filtro-fim");
@@ -295,9 +263,222 @@ document.addEventListener("DOMContentLoaded", function() {
         });
     }
 
-    // Carrega configurações ao abrir o painel
+    // ==========================================
+    // 4. LÓGICA DO MODAL: FINALIZAR ATENDIMENTO
+    // ==========================================
+    const botoesFinalizar = document.querySelectorAll('.btn-finalizar-admin');
+    const modalFinalizar = document.getElementById('modal-finalizar');
+    const btnFecharFinalizar = document.getElementById('btn-cancelar-modal-fin');
+    const btnConfirmarFinalizacao = document.getElementById('btn-confirmar-finalizacao');
+    const inputIdFin = document.getElementById('fin-id-agendamento');
+    const displayTotal = document.getElementById('display-total');
+    
+    const chksServico = document.querySelectorAll('.chk-servico');
+    const chkOutros = document.getElementById('chk-outros');
+    const inputValOutros = document.getElementById('val-outros');
+
+    // Abrir Modal
+    botoesFinalizar.forEach(botao => {
+        botao.addEventListener('click', function() {
+            inputIdFin.value = this.getAttribute('data-id');
+            // Limpa o formulário ao abrir
+            chksServico.forEach(chk => { chk.checked = false; });
+            document.querySelectorAll('.input-valor-servico').forEach(inp => { 
+                inp.value = ''; 
+                inp.disabled = true; 
+            });
+            displayTotal.innerText = "0.00";
+            document.getElementById('fin-pagamento').selectedIndex = 0;
+            
+            modalFinalizar.style.display = 'flex';
+        });
+    });
+
+    // Fechar Modal
+    if (btnFecharFinalizar) {
+        btnFecharFinalizar.addEventListener('click', () => modalFinalizar.style.display = 'none');
+    }
+
+    // Calcular Total
+    function calcularTotal() {
+        let total = 0;
+        document.querySelectorAll('.input-valor-servico').forEach(input => {
+            if (!input.disabled && input.value) {
+                total += parseFloat(input.value) || 0;
+            }
+        });
+        displayTotal.innerText = total.toFixed(2);
+    }
+
+    // Regras dos Checkboxes
+    chksServico.forEach(chk => {
+        chk.addEventListener('change', function() {
+            const valInput = document.getElementById(`val-${this.value.toLowerCase()}`);
+            
+            if (this.id === 'chk-outros') {
+                if (this.checked) {
+                    chksServico.forEach(c => {
+                        if (c.id !== 'chk-outros') {
+                            c.checked = false;
+                            document.getElementById(`val-${c.value.toLowerCase()}`).value = '';
+                            document.getElementById(`val-${c.value.toLowerCase()}`).disabled = true;
+                        }
+                    });
+                    valInput.disabled = false;
+                    valInput.focus();
+                } else {
+                    valInput.disabled = true;
+                    valInput.value = '';
+                }
+            } else {
+                if (chkOutros.checked) {
+                    chkOutros.checked = false;
+                    inputValOutros.disabled = true;
+                    inputValOutros.value = '';
+                }
+                
+                if (this.checked) {
+                    valInput.disabled = false;
+                    valInput.focus();
+                } else {
+                    valInput.disabled = true;
+                    valInput.value = '';
+                }
+            }
+            calcularTotal();
+        });
+    });
+
+    document.querySelectorAll('.input-valor-servico').forEach(input => {
+        input.addEventListener('input', calcularTotal);
+    });
+
+    // Confirmar e Enviar para o Servidor
+    if (btnConfirmarFinalizacao) {
+        btnConfirmarFinalizacao.addEventListener('click', function() {
+            const servicosRealizados = [];
+            let selecionouAlgo = false;
+            let faltouValor = false;
+
+            chksServico.forEach(chk => {
+                if (chk.checked) {
+                    selecionouAlgo = true;
+                    const valorDigitado = document.getElementById(`val-${chk.value.toLowerCase()}`).value;
+                    if (!valorDigitado || parseFloat(valorDigitado) <= 0) {
+                        faltouValor = true;
+                    } else {
+                        servicosRealizados.push({
+                            nome: chk.value,
+                            valor: parseFloat(valorDigitado)
+                        });
+                    }
+                }
+            });
+
+            if (!selecionouAlgo) {
+                alert("Por favor, selecione pelo menos um serviço.");
+                return;
+            }
+            if (faltouValor) {
+                alert("Por favor, insira o valor para todos os serviços selecionados.");
+                return;
+            }
+
+            const dados = {
+                id: inputIdFin.value,
+                servicos: servicosRealizados,
+                pagamento: document.getElementById('fin-pagamento').value,
+                total: parseFloat(displayTotal.innerText)
+            };
+
+            const textoOriginal = btnConfirmarFinalizacao.innerText;
+            btnConfirmarFinalizacao.innerText = "A gravar...";
+            btnConfirmarFinalizacao.disabled = true;
+
+            fetch('/admin/finalizar-atendimento', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(dados)
+            })
+            .then(res => res.json())
+            .then(retorno => {
+                if (retorno.status === "sucesso") {
+                    alert("Atendimento finalizado e registado com sucesso!");
+                    window.location.reload();
+                } else {
+                    alert("Erro: " + retorno.mensagem);
+                    btnConfirmarFinalizacao.innerText = textoOriginal;
+                    btnConfirmarFinalizacao.disabled = false;
+                }
+            })
+            .catch(() => {
+                alert("Erro ao comunicar com o servidor.");
+                btnConfirmarFinalizacao.innerText = textoOriginal;
+                btnConfirmarFinalizacao.disabled = false;
+            });
+        });
+    }
+
+    // ==========================================
+    // 5. LÓGICA DO MODAL: NÃO CONCLUÍDO
+    // ==========================================
+    const botoesNaoConcluido = document.querySelectorAll('.btn-nao-concluido-admin');
+    const modalNaoConcluido = document.getElementById('modal-nao-concluido');
+    const btnFecharNao = document.getElementById('btn-cancelar-modal-nao');
+    const btnConfirmarNao = document.getElementById('btn-confirmar-nao-concluido');
+    const inputIdNao = document.getElementById('nao-id-agendamento');
+
+    botoesNaoConcluido.forEach(botao => {
+        botao.addEventListener('click', function() {
+            inputIdNao.value = this.getAttribute('data-id');
+            document.getElementById('motivo-nao-concluido').selectedIndex = 0;
+            modalNaoConcluido.style.display = 'flex';
+        });
+    });
+
+    if (btnFecharNao) {
+        btnFecharNao.addEventListener('click', () => modalNaoConcluido.style.display = 'none');
+    }
+
+    if (btnConfirmarNao) {
+        btnConfirmarNao.addEventListener('click', function() {
+            const motivo = document.getElementById('motivo-nao-concluido').value;
+            if (!motivo) {
+                alert("Por favor, selecione um motivo.");
+                return;
+            }
+
+            const textoOriginal = btnConfirmarNao.innerText;
+            btnConfirmarNao.innerText = "A gravar...";
+            btnConfirmarNao.disabled = true;
+
+            fetch('/admin/nao-concluido', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ id: inputIdNao.value, motivo: motivo })
+            })
+            .then(res => res.json())
+            .then(retorno => {
+                if (retorno.status === "sucesso") {
+                    alert("Estado atualizado para 'Não Concluído'.");
+                    window.location.reload();
+                } else {
+                    alert("Erro: " + retorno.mensagem);
+                    btnConfirmarNao.innerText = textoOriginal;
+                    btnConfirmarNao.disabled = false;
+                }
+            })
+            .catch(() => {
+                alert("Erro ao comunicar com o servidor.");
+                btnConfirmarNao.innerText = textoOriginal;
+                btnConfirmarNao.disabled = false;
+            });
+        });
+    }
+
+    // Carrega as configurações ao abrir o painel
     if (document.querySelector('.admin-grid')) {
         carregarConfiguracoes();
     }
 
-}); // <-- A chave e o parêntese corretos estão aqui!
+});

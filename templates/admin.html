@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Painel Administrativo - Barbearia</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/admin.css') }}?v=7">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/admin.css') }}?v=9">
 </head>
 <body class="admin-body">
     <div class="admin-wrapper">
@@ -67,20 +67,18 @@
                 <h3>📋 Histórico de Agendamentos</h3>
                 
                 <div class="filtro-agenda-bloco" style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
-    <span class="label-filtro">📅 Buscar período:</span>
-    
-    <input type="date" id="filtro-inicio" class="campo-data-filtro" value="{{ data_inicio }}">
-    <span class="label-filtro">até</span>
-    <input type="date" id="filtro-fim" class="campo-data-filtro" value="{{ data_fim }}">
-    
-    <button type="button" id="btn-buscar-periodo" class="btn-acao btn-auto" style="padding: 5px 15px;">Buscar</button>
-</div>
+                    <span class="label-filtro">📅 Buscar período:</span>
+                    <input type="date" id="filtro-inicio" class="campo-data-filtro" value="{{ data_inicio }}">
+                    <span class="label-filtro">até</span>
+                    <input type="date" id="filtro-fim" class="campo-data-filtro" value="{{ data_fim }}">
+                    <button type="button" id="btn-buscar-periodo" class="btn-acao btn-auto" style="padding: 5px 15px;">Buscar</button>
+                </div>
 
-{% if aviso_filtro %}
-    <div style="color: #d9534f; font-size: 0.85rem; margin-top: 10px; font-weight: bold;">
-        ⚠️ {{ aviso_filtro }}
-    </div>
-{% endif %}
+                {% if aviso_filtro %}
+                    <div style="color: #d9534f; font-size: 0.85rem; margin-top: 10px; font-weight: bold;">
+                        ⚠️ {{ aviso_filtro }}
+                    </div>
+                {% endif %}
             </div>
 
             <div class="table-responsive">
@@ -114,23 +112,19 @@
                                 </td>
                                 <td>
                                     {% set st = a.status | lower %}
-                                    <span class="badge {{ 'agendado' if 'agendado' in st else ('concluido' if 'concluido' in st else 'cancelado') }}">
+                                    <span class="badge {{ 'agendado' if 'agendado' in st else ('concluido' if 'concluído' in st or 'concluido' in st else 'cancelado') }}" 
+                                          style="background-color: {{ '#28a745' if 'concluído' in st or 'concluido' in st else ('#e67e22' if 'não' in st else '') }};">
                                         {{ a.status }}
                                     </span>
                                 </td>
                                 <td>
                                     <div class="acoes-admin-grupo">
-                                        {% set is_passado = (a.data_agendamento < hoje) or (a.data_agendamento == hoje and a.horario < agora) %}
-                                        {% set is_cancelado = (a.status == 'Cancelado') %}
-                                        {% set is_ativo = (a.status == 'Agendado' and not is_passado) %}
-
-                                        {% if is_ativo %}
-                                            <button class="btn-cancelar-admin" data-id="{{ a.id }}" title="Cancelar agendamento">Cancelar</button>
+                                        {% if a.status == 'Agendado' %}
+                                            <button class="btn-finalizar-admin" data-id="{{ a.id }}" title="Finalizar Atendimento">Finalizar</button>
+                                            <button class="btn-nao-concluido-admin" data-id="{{ a.id }}" title="Atendimento não realizado">Não Concluído</button>
                                             <button class="btn-excluir-admin btn-aviso-ativo" data-id="{{ a.id }}" title="Excluir registro">Excluir</button>
-                                        {% elif is_cancelado or is_passado %}
-                                            <button class="btn-excluir-admin" data-id="{{ a.id }}" title="Excluir permanentemente">Excluir</button>
                                         {% else %}
-                                            <button class="btn-excluir-admin" data-id="{{ a.id }}" title="Excluir registro">Excluir</button>
+                                            <button class="btn-excluir-admin" data-id="{{ a.id }}" title="Excluir permanentemente">Excluir</button>
                                         {% endif %}
                                     </div>
                                 </td>
@@ -150,6 +144,82 @@
         </div>
     </div>
 
-    <script src="{{ url_for('static', filename='js/admin.js') }}?v=7"></script>
+    <!-- ========================================= -->
+    <!-- MODAL 1: FINALIZAR ATENDIMENTO            -->
+    <!-- ========================================= -->
+    <div id="modal-finalizar" class="modal-overlay-admin">
+        <div class="modal-conteudo-admin">
+            <h3>✅ Finalizar Atendimento</h3>
+            <input type="hidden" id="fin-id-agendamento">
+            
+            <p class="modal-texto-ajuda">Selecione os serviços realizados e o valor:</p>
+            
+            <div id="lista-checkbox-servicos">
+                <div class="linha-servico">
+                    <label><input type="checkbox" class="chk-servico" value="Corte"> Corte</label>
+                    <input type="number" step="0.01" class="input-valor-servico" id="val-corte" placeholder="R$ 0,00" disabled>
+                </div>
+                <div class="linha-servico">
+                    <label><input type="checkbox" class="chk-servico" value="Barba"> Barba</label>
+                    <input type="number" step="0.01" class="input-valor-servico" id="val-barba" placeholder="R$ 0,00" disabled>
+                </div>
+                <div class="linha-servico">
+                    <label><input type="checkbox" class="chk-servico" value="Lavagem"> Lavagem</label>
+                    <input type="number" step="0.01" class="input-valor-servico" id="val-lavagem" placeholder="R$ 0,00" disabled>
+                </div>
+                <div class="linha-servico">
+                    <label><input type="checkbox" class="chk-servico" value="Sobrancelha"> Sobrancelha</label>
+                    <input type="number" step="0.01" class="input-valor-servico" id="val-sobrancelha" placeholder="R$ 0,00" disabled>
+                </div>
+                <div class="linha-servico servico-destaque">
+                    <label><input type="checkbox" class="chk-servico" id="chk-outros" value="Outros"> Outros</label>
+                    <input type="number" step="0.01" class="input-valor-servico" id="val-outros" placeholder="R$ 0,00" disabled>
+                </div>
+            </div>
+
+            <div class="total-destaque">
+                Total: R$ <span id="display-total">0.00</span>
+            </div>
+
+            <p class="modal-texto-ajuda">Forma de Pagamento:</p>
+            <select id="fin-pagamento" class="campo-select-modal">
+                <option value="Pix">Pix</option>
+                <option value="Dinheiro">Dinheiro</option>
+                <option value="Crédito">Cartão de Crédito</option>
+                <option value="Débito">Cartão de Débito</option>
+            </select>
+            
+            <div class="botoes-modal-grupo">
+                <button id="btn-confirmar-finalizacao" class="btn-modal-acao btn-verde">Concluir Atendimento</button>
+                <button id="btn-cancelar-modal-fin" class="btn-modal-acao btn-cinza">Fechar</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ========================================= -->
+    <!-- MODAL 2: NÃO CONCLUÍDO (FALTA / ATRASO)   -->
+    <!-- ========================================= -->
+    <div id="modal-nao-concluido" class="modal-overlay-admin">
+        <div class="modal-conteudo-admin modal-borda-laranja">
+            <h3 class="titulo-laranja">⚠️ Não Concluído</h3>
+            <input type="hidden" id="nao-id-agendamento">
+            
+            <p class="modal-texto-ajuda">Qual foi o motivo de não ter finalizado?</p>
+            <select id="motivo-nao-concluido" class="campo-select-modal">
+                <option value="" disabled selected>Selecione um motivo...</option>
+                <option value="Falta">Falta do Cliente</option>
+                <option value="Atraso">Atraso excessivo</option>
+                <option value="Desistência">Desistência</option>
+                <option value="Outros">Outros</option>
+            </select>
+            
+            <div class="botoes-modal-grupo">
+                <button id="btn-confirmar-nao-concluido" class="btn-modal-acao btn-laranja">Salvar Histórico</button>
+                <button id="btn-cancelar-modal-nao" class="btn-modal-acao btn-cinza">Fechar</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="{{ url_for('static', filename='js/admin.js') }}?v=9"></script>
 </body>
 </html>

@@ -526,3 +526,67 @@ def admin_excluir_agendamento():
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000, debug=True)
+
+
+@app.route('/admin/finalizar-atendimento', methods=['POST'])
+def finalizar_atendimento():
+    if not session.get('admin_logado'): 
+        return jsonify({"status": "erro", "mensagem": "Não autorizado"}), 403
+    
+    dados = request.get_json()
+    agendamento_id = dados.get('id')
+    
+    banco = obter_dados_nuvem()
+    historico = banco["agendamentos"]
+    encontrou = False
+    
+    for r in historico:
+        if str(r.get('id')) == str(agendamento_id):
+            r['status'] = 'Concluído'
+            r['servicos_realizados'] = dados.get('servicos', [])
+            r['forma_pagamento'] = dados.get('pagamento')
+            r['valor_total'] = dados.get('total', 0.0)
+            r['hora_finalizacao'] = datetime.now().strftime('%H:%M')
+            
+            # Calcula o tempo médio de atendimento em minutos
+            try:
+                hora_inicio = datetime.strptime(r['horario'], '%H:%M')
+                hora_fim = datetime.strptime(r['hora_finalizacao'], '%H:%M')
+                minutos = int((hora_fim - hora_inicio).total_seconds() / 60)
+                r['tempo_atendimento_minutos'] = minutos if minutos > 0 else 0
+            except:
+                r['tempo_atendimento_minutos'] = 0
+                
+            encontrou = True
+            break
+            
+    if encontrou:
+        salvar_dados_nuvem(banco)
+        return jsonify({"status": "sucesso"})
+        
+    return jsonify({"status": "erro", "mensagem": "Agendamento não encontrado."}), 404
+
+@app.route('/admin/nao-concluido', methods=['POST'])
+def nao_concluido():
+    if not session.get('admin_logado'): 
+        return jsonify({"status": "erro", "mensagem": "Não autorizado"}), 403
+    
+    dados = request.get_json()
+    agendamento_id = dados.get('id')
+    
+    banco = obter_dados_nuvem()
+    historico = banco["agendamentos"]
+    encontrou = False
+    
+    for r in historico:
+        if str(r.get('id')) == str(agendamento_id):
+            r['status'] = 'Não Realizado'
+            r['motivo_cancelamento'] = dados.get('motivo')
+            encontrou = True
+            break
+            
+    if encontrou:
+        salvar_dados_nuvem(banco)
+        return jsonify({"status": "sucesso"})
+        
+    return jsonify({"status": "erro", "mensagem": "Agendamento não encontrado."}), 404    
