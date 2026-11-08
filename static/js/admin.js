@@ -476,6 +476,96 @@ document.addEventListener("DOMContentLoaded", function() {
         });
     }
 
+    // ==========================================
+    // 6. LÓGICA DO MODAL: CADASTRO DE CLIENTES
+    // ==========================================
+    const btnAbrirModalClientes = document.getElementById('btn-abrir-modal-clientes');
+    const modalClientes = document.getElementById('modal-clientes');
+    const btnFecharClientesX = document.getElementById('btn-fechar-modal-clientes');
+    const btnFecharClientesBaixo = document.getElementById('btn-fechar-modal-clientes-baixo');
+    const containerListaClientes = document.getElementById('container-lista-clientes');
+    const inputBuscaCliente = document.getElementById('input-busca-cliente');
+
+    let cacheClientes = [];
+
+    function renderizarClientes(clientesParaExibir) {
+        if (!containerListaClientes) return;
+
+        if (!clientesParaExibir || clientesParaExibir.length === 0) {
+            containerListaClientes.innerHTML = '<p style="color: #aaa; text-align: center; padding: 25px;">Nenhum cliente cadastrado ou encontrado.</p>';
+            return;
+        }
+
+        containerListaClientes.innerHTML = clientesParaExibir.map(c => `
+            <a href="/admin/cliente/${c.id}" class="card-item-cliente" title="Ver perfil de ${c.nome}">
+                <div class="card-item-cliente-info">
+                    <span class="card-item-cliente-nome">👤 ${c.nome}</span>
+                    <div class="card-item-cliente-detalhes">
+                        ${c.celular ? `<span>📱 ${c.celular}</span>` : ''}
+                        ${c.email ? `<span>✉️ ${c.email}</span>` : ''}
+                    </div>
+                </div>
+                <span class="card-item-cliente-seta">➔</span>
+            </a>
+        `).join('');
+    }
+
+    function abrirModalClientes() {
+        if (!modalClientes) return;
+        modalClientes.style.display = 'flex';
+        containerListaClientes.innerHTML = '<p style="color: #aaa; text-align: center; padding: 25px;">Carregando clientes...</p>';
+        if (inputBuscaCliente) inputBuscaCliente.value = '';
+
+        fetch('/admin/listar-clientes?t=' + new Date().getTime())
+            .then(res => {
+                if (!res.ok) throw new Error("Erro ao buscar clientes");
+                return res.json();
+            })
+            .then(dados => {
+                if (dados.status === "sucesso") {
+                    cacheClientes = dados.clientes || [];
+                    renderizarClientes(cacheClientes);
+                } else {
+                    containerListaClientes.innerHTML = `<p style="color: #dc3545; text-align: center; padding: 20px;">Erro: ${dados.mensagem}</p>`;
+                }
+            })
+            .catch(err => {
+                containerListaClientes.innerHTML = `<p style="color: #dc3545; text-align: center; padding: 20px;">Erro ao carregar lista de clientes.</p>`;
+            });
+    }
+
+    function fecharModalClientes() {
+        if (modalClientes) modalClientes.style.display = 'none';
+    }
+
+    if (btnAbrirModalClientes) {
+        btnAbrirModalClientes.addEventListener('click', abrirModalClientes);
+    }
+    if (btnFecharClientesX) {
+        btnFecharClientesX.addEventListener('click', fecharModalClientes);
+    }
+    if (btnFecharClientesBaixo) {
+        btnFecharClientesBaixo.addEventListener('click', fecharModalClientes);
+    }
+
+    if (inputBuscaCliente) {
+        inputBuscaCliente.addEventListener('input', function() {
+            const termo = this.value.toLowerCase().trim();
+            if (!termo) {
+                renderizarClientes(cacheClientes);
+                return;
+            }
+            const filtrados = cacheClientes.filter(c => {
+                const nome = (c.nome || '').toLowerCase();
+                const celular = (c.celular || '').replace(/\D/g, '');
+                const email = (c.email || '').toLowerCase();
+                const termoLimpo = termo.replace(/\D/g, '');
+                return nome.includes(termo) || email.includes(termo) || (termoLimpo && celular.includes(termoLimpo));
+            });
+            renderizarClientes(filtrados);
+        });
+    }
+
     // Carrega as configurações ao abrir o painel
     if (document.querySelector('.admin-grid')) {
         carregarConfiguracoes();

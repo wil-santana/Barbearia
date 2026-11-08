@@ -34,13 +34,68 @@ def admin_obrigatorio(f):
     return decorador
 
 # ==========================================
-# CONFIGURAÇÃO DO RESEND (ENVIO DE EMAIL)
+# CONFIGURAÇÃO DE ENVIO DE E-MAIL (BREVO & RESEND)
 # ==========================================
+BREVO_API_KEY = os.getenv("BREVO_API_KEY", "").strip()
+BREVO_FROM_EMAIL = os.getenv("BREVO_FROM_EMAIL", "wilsantanna@gmail.com").strip()
 RESEND_API_KEY = os.getenv("RESEND_API_KEY", "").strip()
 RESEND_FROM_EMAIL = os.getenv("RESEND_FROM_EMAIL", "onboarding@resend.dev").strip()
 APP_BASE_URL = os.getenv("APP_BASE_URL", "").rstrip("/")
+
 if RESEND_API_KEY:
     resend.api_key = RESEND_API_KEY
+
+def enviar_email_recuperacao(destinatario, nome_cliente, link_redefinicao):
+    """
+    Envia o e-mail de recuperação priorizando o Brevo (sem travas de domínio).
+    Se o Brevo não estiver configurado, usa o Resend como fallback.
+    """
+    assunto = "Recuperação de Senha - Barbearia"
+    html_conteudo = f"""
+    <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #e0e0e0; border-radius: 8px;">
+        <h2 style="color: #2c3e50;">Recuperação de Senha</h2>
+        <p>Olá, <strong>{nome_cliente}</strong>!</p>
+        <p>Recebemos uma solicitação para redefinir a sua senha de acesso na Barbearia.</p>
+        <p style="margin: 25px 0;">
+            <a href="{link_redefinicao}" style="background-color: #2c3e50; color: #ffffff; padding: 12px 24px; text-decoration: none; border-radius: 5px; font-weight: bold; display: inline-block;">Redefinir Minha Senha</a>
+        </p>
+        <p style="color: #7f8c8d; font-size: 13px;">Este link expira em 15 minutos.</p>
+        <p style="color: #7f8c8d; font-size: 13px;">Se você não solicitou a alteração, ignore este e-mail com segurança.</p>
+    </div>
+    """
+
+    # 1. TENTA VIA BREVO (ENVIA PARA QUALQUER CLIENTE GRÁTIS VIA API REST NATIVA)
+    if BREVO_API_KEY:
+        url_brevo = "https://api.brevo.com/v3/smtp/email"
+        headers_brevo = {
+            "accept": "application/json",
+            "api-key": BREVO_API_KEY,
+            "content-type": "application/json"
+        }
+        payload_brevo = {
+            "sender": {"name": "Barbearia", "email": BREVO_FROM_EMAIL},
+            "to": [{"email": destinatario, "name": nome_cliente}],
+            "subject": assunto,
+            "htmlContent": html_conteudo
+        }
+        resp = requests.post(url_brevo, json=payload_brevo, headers=headers_brevo, timeout=10)
+        if resp.status_code in [200, 201]:
+            return True, "E-mail enviado com sucesso via Brevo!"
+        else:
+            raise Exception(f"Erro Brevo ({resp.status_code}): {resp.text}")
+
+    # 2. FALLBACK RESEND
+    if RESEND_API_KEY:
+        params = {
+            "from": RESEND_FROM_EMAIL,
+            "to": [destinatario],
+            "subject": assunto,
+            "html": html_conteudo
+        }
+        resend.Emails.send(params)
+        return True, "E-mail enviado com sucesso via Resend!"
+
+    return False, "Nenhum serviço de e-mail (BREVO_API_KEY ou RESEND_API_KEY) configurado."
 
 # ==========================================
 # CONFIGURAÇÃO DO JSONBIN (BANCO DE DADOS NA NUVEM)
@@ -372,39 +427,23 @@ def solicitar_recuperacao():
         if not email_destinatario:
             return jsonify({"status": "erro", "mensagem": "Este usuário não possui e-mail cadastrado."}), 400
 
-        if not RESEND_API_KEY:
+        nome_cliente = usuario_alvo.get('nome', 'Cliente')
+
+        if not BREVO_API_KEY and not RESEND_API_KEY:
             # Fallback para desenvolvimento local sem chave configurada
             return jsonify({
                 "status": "sucesso",
                 "canal": "email",
-                "mensagem": "Chave do Resend não configurada. Use o link de teste.",
+                "mensagem": "Chave de e-mail não configurada no .env/Render. Use o link de teste.",
                 "link": link_redefinicao,
-                "aviso": "Configure RESEND_API_KEY no Render/.env para envio automático."
+                "aviso": "Configure BREVO_API_KEY no Render para envio automático."
             })
 
         try:
-            nome_cliente = usuario_alvo.get('nome', 'Cliente')
-            params = {
-                "from": RESEND_FROM_EMAIL,
-                "to": [email_destinatario],
-                "subject": "Recuperação de Senha - Barbearia",
-                "html": f"""
-                <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #e0e0e0; border-radius: 8px;">
-                    <h2 style="color: #2c3e50;">Recuperação de Senha</h2>
-                    <p>Olá, <strong>{nome_cliente}</strong>!</p>
-                    <p>Recebemos uma solicitação para redefinir a sua senha de acesso na Barbearia.</p>
-                    <p style="margin: 25px 0;">
-                        <a href="{link_redefinicao}" style="background-color: #2c3e50; color: #ffffff; padding: 12px 24px; text-decoration: none; border-radius: 5px; font-weight: bold; display: inline-block;">Redefinir Minha Senha</a>
-                    </p>
-                    <p style="color: #7f8c8d; font-size: 13px;">Este link expira em 15 minutos.</p>
-                    <p style="color: #7f8c8d; font-size: 13px;">Se você não solicitou a alteração, ignore este e-mail com segurança.</p>
-                </div>
-                """
-            }
-            resend.Emails.send(params)
+            sucesso, msg = enviar_email_recuperacao(email_destinatario, nome_cliente, link_redefinicao)
             return jsonify({"status": "sucesso", "canal": "email", "mensagem": "E-mail de recuperação enviado com sucesso!"})
         except Exception as e:
-            print(f"❌ ERRO AO ENVIAR EMAIL RESEND: {e}")
+            print(f"❌ ERRO AO ENVIAR EMAIL: {e}")
             return jsonify({"status": "erro", "mensagem": f"Falha no envio de e-mail: {str(e)}"}), 500
 
     return jsonify({"status": "sucesso", "canal": canal, "link": link_redefinicao, "acesso": acesso})
@@ -501,6 +540,25 @@ def admin_ver_cliente(usuario_id):
     if not usuario_encontrado:
         return "Cliente não encontrado", 404
     return render_template('admin_cliente.html', cliente=usuario_encontrado)
+
+@app.route('/admin/listar-clientes', methods=['GET'])
+@admin_obrigatorio
+def admin_listar_clientes():
+    banco = obter_dados_nuvem()
+    usuarios = banco.get("usuarios", [])
+    # Retorna os dados resumidos e higienizados (sem expor a senha)
+    lista = []
+    for u in usuarios:
+        lista.append({
+            "id": u.get("id"),
+            "nome": u.get("nome", "Sem Nome"),
+            "celular": u.get("celular", ""),
+            "email": u.get("email", ""),
+            "nascimento": u.get("nascimento", "")
+        })
+    # Ordena por nome
+    lista = sorted(lista, key=lambda x: x["nome"].lower())
+    return jsonify({"status": "sucesso", "clientes": lista})
 
 # ESTA ROTA FICA SEM PROTEÇÃO PARA O CALENDÁRIO DOS VISITANTES FUNCIONAR
 @app.route('/admin/config-agenda', methods=['GET'])

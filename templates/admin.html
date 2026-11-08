@@ -4,13 +4,18 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Painel Administrativo - Barbearia</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/admin.css') }}?v=10">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/admin.css') }}?v=11">
 </head>
 <body class="admin-body">
     <div class="admin-wrapper">
         <header class="admin-header">
             <h1>⚙️ Painel de Controle</h1>
-            <a href="/" class="btn-voltar-admin">Sair</a>
+            <div style="display: flex; gap: 10px; align-items: center;">
+                <button type="button" id="btn-abrir-modal-clientes" class="btn-acao btn-auto" style="background-color: #0d6efd; color: #fff; padding: 8px 14px; font-size: 0.85rem; border-radius: 6px;">
+                    👥 Cadastro de Clientes
+                </button>
+                <a href="/" class="btn-voltar-admin">Sair</a>
+            </div>
         </header>
 
         <div class="admin-grid">
@@ -240,6 +245,32 @@
         </div>
     </div>
 
-    <script src="{{ url_for('static', filename='js/admin.js') }}?v=10"></script>
+    <!-- ========================================= -->
+    <!-- MODAL 3: CADASTRO DE CLIENTES             -->
+    <!-- ========================================= -->
+    <div id="modal-clientes" class="modal-overlay-admin">
+        <div class="modal-conteudo-admin modal-clientes-box">
+            <div class="modal-clientes-header">
+                <h3>👥 Clientes Cadastrados</h3>
+                <button type="button" id="btn-fechar-modal-clientes" class="btn-fechar-modal-x">&times;</button>
+            </div>
+
+            <p class="modal-texto-ajuda">Clique em qualquer cliente para visualizar a ficha cadastral completa:</p>
+
+            <div class="busca-clientes-container">
+                <input type="text" id="input-busca-cliente" class="campo-entrada" placeholder="🔍 Filtrar por nome, celular ou e-mail...">
+            </div>
+
+            <div class="lista-clientes-scroll" id="container-lista-clientes">
+                <p style="color: #aaa; text-align: center; padding: 20px;">Carregando clientes...</p>
+            </div>
+
+            <div class="botoes-modal-grupo" style="margin-top: 15px;">
+                <button id="btn-fechar-modal-clientes-baixo" class="btn-modal-acao btn-cinza">Fechar</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="{{ url_for('static', filename='js/admin.js') }}?v=11"></script>
 </body>
 </html>
