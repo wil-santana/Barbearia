@@ -381,6 +381,13 @@ document.addEventListener("DOMContentLoaded", function() {
             const canal = selectCanal.value;
             const acesso = inputAcesso.value;
             
+            const btnSubmit = formRecuperar.querySelector("button[type='submit']");
+            const textoOriginal = btnSubmit ? btnSubmit.innerText : "";
+            if (btnSubmit) {
+                btnSubmit.innerText = "Enviando...";
+                btnSubmit.disabled = true;
+            }
+
             fetch('/solicitar-recuperacao', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -388,19 +395,34 @@ document.addEventListener("DOMContentLoaded", function() {
             })
             .then(resposta => resposta.json())
             .then(dados => {
+                if (btnSubmit) {
+                    btnSubmit.innerText = textoOriginal;
+                    btnSubmit.disabled = false;
+                }
                 if (dados.status === "sucesso") {
                     if (dados.canal === "whatsapp") {
                         const texto = encodeURIComponent(`Olá! Aqui está o seu link seguro para redefinir a senha da barbearia: ${dados.link}`);
                         window.open(`https://wa.me/55${dados.acesso.replace(/\D/g,'')}?text=${texto}`, '_blank');
+                        window.location.href = "/";
                     } else {
-                        alert("Link de recuperação gerado com sucesso! (Link de teste): " + dados.link);
+                        if (dados.link) {
+                            alert("Link gerado (modo teste): " + dados.link);
+                        } else {
+                            alert(dados.mensagem || "Enviamos o link de recuperação para o seu e-mail!");
+                        }
+                        window.location.href = "/";
                     }
-                    window.location.href = "/";
                 } else {
                     alert("Erro: " + dados.mensagem);
                 }
             })
-            .catch(() => alert("Erro ao se comunicar com o servidor."));
+            .catch(() => {
+                if (btnSubmit) {
+                    btnSubmit.innerText = textoOriginal;
+                    btnSubmit.disabled = false;
+                }
+                alert("Erro ao se comunicar com o servidor.");
+            });
         });
     }
 

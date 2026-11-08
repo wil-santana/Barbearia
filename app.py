@@ -6,6 +6,7 @@ from datetime import timedelta, datetime, date
 from flask import Flask, render_template, request, jsonify, session, redirect, url_for
 from functools import wraps
 from dotenv import load_dotenv
+import resend
 
 # Carrega as variáveis do arquivo .env
 load_dotenv()
@@ -31,6 +32,15 @@ def admin_obrigatorio(f):
             return redirect(url_for('home'))
         return f(*args, **kwargs)
     return decorador
+
+# ==========================================
+# CONFIGURAÇÃO DO RESEND (ENVIO DE EMAIL)
+# ==========================================
+RESEND_API_KEY = os.getenv("RESEND_API_KEY", "").strip()
+RESEND_FROM_EMAIL = os.getenv("RESEND_FROM_EMAIL", "onboarding@resend.dev").strip()
+APP_BASE_URL = os.getenv("APP_BASE_URL", "").rstrip("/")
+if RESEND_API_KEY:
+    resend.api_key = RESEND_API_KEY
 
 # ==========================================
 # CONFIGURAÇÃO DO JSONBIN (BANCO DE DADOS NA NUVEM)
@@ -339,10 +349,12 @@ def solicitar_recuperacao():
     token = uuid.uuid4().hex
     expiracao = time.time() + 900
     
+    usuario_alvo = None
     for u in banco["usuarios"]:
         if u.get('celular') == acesso or u.get('email') == acesso:
             u['token_recuperacao'] = token
             u['token_expiracao'] = expiracao
+            usuario_alvo = u
             encontrou = True
             break
             
@@ -350,7 +362,51 @@ def solicitar_recuperacao():
         return jsonify({"status": "erro", "mensagem": "E-mail ou celular não encontrado no sistema."}), 404
         
     salvar_dados_nuvem(banco)
-    link_redefinicao = f"http://127.0.0.1:5000/redefinir-senha?token={token}"
+
+    # Constrói a URL base dinâmica (usa APP_BASE_URL se definida, ou host da requisição)
+    base_url = APP_BASE_URL if APP_BASE_URL else request.host_url.rstrip('/')
+    link_redefinicao = f"{base_url}/redefinir-senha?token={token}"
+
+    if canal == 'email':
+        email_destinatario = usuario_alvo.get('email')
+        if not email_destinatario:
+            return jsonify({"status": "erro", "mensagem": "Este usuário não possui e-mail cadastrado."}), 400
+
+        if not RESEND_API_KEY:
+            # Fallback para desenvolvimento local sem chave configurada
+            return jsonify({
+                "status": "sucesso",
+                "canal": "email",
+                "mensagem": "Chave do Resend não configurada. Use o link de teste.",
+                "link": link_redefinicao,
+                "aviso": "Configure RESEND_API_KEY no Render/.env para envio automático."
+            })
+
+        try:
+            nome_cliente = usuario_alvo.get('nome', 'Cliente')
+            params = {
+                "from": RESEND_FROM_EMAIL,
+                "to": [email_destinatario],
+                "subject": "Recuperação de Senha - Barbearia",
+                "html": f"""
+                <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #e0e0e0; border-radius: 8px;">
+                    <h2 style="color: #2c3e50;">Recuperação de Senha</h2>
+                    <p>Olá, <strong>{nome_cliente}</strong>!</p>
+                    <p>Recebemos uma solicitação para redefinir a sua senha de acesso na Barbearia.</p>
+                    <p style="margin: 25px 0;">
+                        <a href="{link_redefinicao}" style="background-color: #2c3e50; color: #ffffff; padding: 12px 24px; text-decoration: none; border-radius: 5px; font-weight: bold; display: inline-block;">Redefinir Minha Senha</a>
+                    </p>
+                    <p style="color: #7f8c8d; font-size: 13px;">Este link expira em 15 minutos.</p>
+                    <p style="color: #7f8c8d; font-size: 13px;">Se você não solicitou a alteração, ignore este e-mail com segurança.</p>
+                </div>
+                """
+            }
+            resend.Emails.send(params)
+            return jsonify({"status": "sucesso", "canal": "email", "mensagem": "E-mail de recuperação enviado com sucesso!"})
+        except Exception as e:
+            print(f"❌ ERRO AO ENVIAR EMAIL RESEND: {e}")
+            return jsonify({"status": "erro", "mensagem": f"Falha no envio de e-mail: {str(e)}"}), 500
+
     return jsonify({"status": "sucesso", "canal": canal, "link": link_redefinicao, "acesso": acesso})
 
 @app.route('/redefinir-senha')

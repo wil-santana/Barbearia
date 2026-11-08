@@ -1,0 +1,39 @@
+# Ambientes locais e credenciais
+.env
+.env.*
+*.local
+*.pem
+*.key
+*.crt
+
+# Controle de versão e metadados
+.git/
+.idea/
+.vscode/
+
+# Dependências e pacotes
+node_modules/
+.venv/
+venv/
+env/
+__pycache__/
+*.pyc
+
+# Builds, compilados e pacotes
+dist/
+build/
+target/
+bin/
+out/
+*.class
+*.jar
+*.war
+
+# Logs, bancos locais e caches
+logs/
+*.log
+*.sqlite
+*.db
+.cache/
+.temp/
+coverage/
