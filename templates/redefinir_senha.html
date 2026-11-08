@@ -10,7 +10,7 @@
     <main class="container">
         <header class="cabecalho">
             <h2>🔒 Nova Senha</h2>
-            <p>Crie sua nova senha de acesso</p>
+            <p>Crie e confirme sua nova senha de acesso</p>
         </header>
 
         <section class="cartao">
@@ -19,7 +19,22 @@
 
                 <div class="grupo-formulario">
                     <label for="nova_senha">Nova Senha:</label>
-                    <input type="password" id="nova_senha" required class="campo-entrada" placeholder="Digite sua nova senha">
+                    <div class="campo-senha-container">
+                        <input type="password" id="nova_senha" required class="campo-entrada" placeholder="Digite sua nova senha">
+                        <button type="button" class="btn-toggle-senha" data-alvo="nova_senha" aria-label="Visualizar senha" title="Visualizar senha">
+                            👁️
+                        </button>
+                    </div>
+                </div>
+
+                <div class="grupo-formulario">
+                    <label for="confirmar_nova_senha">Confirmar Nova Senha:</label>
+                    <div class="campo-senha-container">
+                        <input type="password" id="confirmar_nova_senha" required class="campo-entrada" placeholder="Repita a nova senha">
+                        <button type="button" class="btn-toggle-senha" data-alvo="confirmar_nova_senha" aria-label="Visualizar senha" title="Visualizar senha">
+                            👁️
+                        </button>
+                    </div>
                 </div>
 
                 <button type="submit" class="btn-primario">Salvar Nova Senha</button>

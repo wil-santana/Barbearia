@@ -426,13 +426,49 @@ document.addEventListener("DOMContentLoaded", function() {
         });
     }
 
+    // Alternador de visibilidade de senha (olhinho)
+    const botoesToggleSenha = document.querySelectorAll(".btn-toggle-senha");
+    botoesToggleSenha.forEach(btn => {
+        btn.addEventListener("click", function() {
+            const alvoId = this.getAttribute("data-alvo");
+            const campoAlvo = document.getElementById(alvoId);
+            if (!campoAlvo) return;
+
+            if (campoAlvo.type === "password") {
+                campoAlvo.type = "text";
+                this.textContent = "🙈";
+            } else {
+                campoAlvo.type = "password";
+                this.textContent = "👁️";
+            }
+        });
+    });
+
     const formRedefinir = document.getElementById("formRedefinir");
     if (formRedefinir) {
         formRedefinir.addEventListener("submit", function(e) {
             e.preventDefault();
             const token = document.getElementById("token").value;
             const nova_senha = document.getElementById("nova_senha").value;
+            const confirmar_nova_senha = document.getElementById("confirmar_nova_senha").value;
             
+            if (nova_senha !== confirmar_nova_senha) {
+                alert("As senhas digitadas não coincidem. Por favor, verifique.");
+                return;
+            }
+
+            if (nova_senha.length < 4) {
+                alert("A senha deve conter no mínimo 4 caracteres.");
+                return;
+            }
+
+            const btnSubmit = formRedefinir.querySelector("button[type='submit']");
+            const textoOriginal = btnSubmit ? btnSubmit.innerText : "";
+            if (btnSubmit) {
+                btnSubmit.innerText = "Salvando...";
+                btnSubmit.disabled = true;
+            }
+
             fetch('/salvar-nova-senha', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -440,6 +476,10 @@ document.addEventListener("DOMContentLoaded", function() {
             })
             .then(resposta => resposta.json())
             .then(dados => {
+                if (btnSubmit) {
+                    btnSubmit.innerText = textoOriginal;
+                    btnSubmit.disabled = false;
+                }
                 if (dados.status === "sucesso") {
                     alert("Senha alterada com sucesso! Faça login com a nova senha.");
                     window.location.href = "/";
@@ -447,7 +487,13 @@ document.addEventListener("DOMContentLoaded", function() {
                     alert("Erro: " + dados.mensagem);
                 }
             })
-            .catch(() => alert("Erro ao se comunicar com o servidor."));
+            .catch(() => {
+                if (btnSubmit) {
+                    btnSubmit.innerText = textoOriginal;
+                    btnSubmit.disabled = false;
+                }
+                alert("Erro ao se comunicar com o servidor.");
+            });
         });
     }
 

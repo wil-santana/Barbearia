@@ -571,3 +571,37 @@ input[type="date"]::-webkit-calendar-picker-indicator {
     font-weight: bold;
     text-decoration: none;
 }
+
+/* Container de input com botão de visualização de senha */
+.campo-senha-container {
+    position: relative;
+    display: flex;
+    align-items: center;
+    width: 100%;
+}
+
+.campo-senha-container input {
+    padding-right: 45px !important;
+}
+
+.btn-toggle-senha {
+    position: absolute;
+    right: 12px;
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    font-size: 18px;
+    line-height: 1;
+    padding: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0.65;
+    transition: opacity 0.2s ease, transform 0.1s ease;
+    user-select: none;
+}
+
+.btn-toggle-senha:hover {
+    opacity: 1;
+    transform: scale(1.1);
+}
